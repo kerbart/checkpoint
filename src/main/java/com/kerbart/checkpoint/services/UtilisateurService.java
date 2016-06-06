@@ -23,6 +23,11 @@ public class UtilisateurService {
     	return utilisateur;
     }
     
+    public Utilisateur findUserByEmail(String email) {
+    	 Query query = em.createQuery("select u from Utilisateur u where u.email = :email").setParameter("email", email);
+         return (Utilisateur)query.getSingleResult();
+    }
+    
     public List<Utilisateur> listUsers() {
     	 Query query = em.createQuery("select u from Utilisateur u");
          return query.getResultList();

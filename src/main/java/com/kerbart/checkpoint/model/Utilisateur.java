@@ -34,7 +34,7 @@ public class Utilisateur {
 	String nom;
 	
 	
-	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "user_application", joinColumns = { 
 			@JoinColumn(name = "utilisateur_id", nullable = false, updatable = false) }, 
 			inverseJoinColumns = { @JoinColumn(name = "application_id", 
