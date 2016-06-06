@@ -1,2 +1,3 @@
-# checpoint
-Aider les infirmier à planifier leur tournées
+# Checkpoint
+
+Aider les infirmiers liberaux à organiser leurs tournées.
