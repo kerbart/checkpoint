@@ -1,0 +1,78 @@
+@font-face {
+	font-family: 'nusseo';
+	src:url('fonts/nusseo.eot?e6f81c');
+	src:url('fonts/nusseo.eot?e6f81c#iefix') format('embedded-opentype'),
+		url('fonts/nusseo.ttf?e6f81c') format('truetype'),
+		url('fonts/nusseo.woff?e6f81c') format('woff'),
+		url('fonts/nusseo.svg?e6f81c#nusseo') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+[class^="ico-"], [class*=" ico-"] {
+    /* use !important to prevent issues with browser extensions that change fonts */
+	font-family: 'nusseo' !important;
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.ico-ico-shop:before {
+	content: "\e900";
+}
+.ico-ico-arrow-down:before {
+	content: "\e901";
+}
+.ico-ico-arrow-right:before {
+	content: "\e902";
+}
+.ico-ico-arrow-up:before {
+	content: "\e903";
+}
+.ico-ico-cart-plus:before {
+	content: "\e904";
+}
+.ico-ico-check:before {
+	content: "\e905";
+}
+.ico-ico-checkbox:before {
+	content: "\e906";
+}
+.ico-ico-delivering:before {
+	content: "\e907";
+}
+.ico-ico-exchange:before {
+	content: "\e908";
+}
+.ico-ico-facebook:before {
+	content: "\e909";
+}
+.ico-ico-heart:before {
+	content: "\e90a";
+}
+.ico-ico-search:before {
+	content: "\e90b";
+}
+.ico-ico-secur:before {
+	content: "\e90c";
+}
+.ico-ico-star:before {
+	content: "\e90d";
+}
+.ico-ico-support:before {
+	content: "\e90e";
+}
+.ico-ico-trash:before {
+	content: "\e90f";
+}
+.ico-ico-twitter:before {
+	content: "\e910";
+}
+

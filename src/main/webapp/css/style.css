@@ -1,0 +1,16 @@
+body {
+	-webkit-font-smoothing: antialiased;
+	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004);
+	font-family: 'Montserrat', sans-serif;
+	background-color: #FFF;
+}
+
+#wrapper {
+	margin:20px;
+}
+
+.header {
+	background-color: #FFF;
+	padding:10px;
+}
+

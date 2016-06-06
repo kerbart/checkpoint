@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration scan="true">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>utf-8</charset>
+            <!--Pattern>%d{HH:mm:ss.SSS} - [%p] %c - %m%n</Pattern-->
+            <Pattern>%d{ISO8601} %-5p [%-35C{1}] %m%n</Pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.nusseo" level="DEBUG"/>
+
+    <root level="ERROR">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
