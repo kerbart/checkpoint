@@ -101,6 +101,10 @@ public class ApplicationService {
     public Boolean checkApplicationBelongsUtilisateur(String appToken, String utilisateurToken) {
         Application app = applicationRepository.findByToken(appToken);
         Utilisateur utilisateur = utilisateurRepository.findByToken(utilisateurToken);
+        if (app == null || utilisateur == null) {
+            return false;
+        }
+
         return checkApplicationBelongsUtilisateur(app, utilisateur);
     }
 
