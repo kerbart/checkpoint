@@ -1,93 +1,90 @@
 package com.kerbart.checkpoint.model;
 
-import java.util.Set;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 
 @Entity
 public class Utilisateur {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "utilisateur_id")
-	Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "utilisateur_id")
+    Long id;
 
-	@Column(unique=true)
-	String email;
+    @Column(unique = true)
+    String email;
 
-	@Column
-	String password;
+    @Column
+    String password;
 
-	@Column
-	String prenom;
+    @Column
+    String prenom;
 
-	@Column
-	String nom;
-	
-	
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "user_application", joinColumns = { 
-			@JoinColumn(name = "utilisateur_id", nullable = false, updatable = false) }, 
-			inverseJoinColumns = { @JoinColumn(name = "application_id", 
-					nullable = false, updatable = false) })
-	Set<Application> applications;
+    @Column
+    String nom;
 
-	public Integer getId() {
-		return id;
-	}
+    @Column
+    String telephone;
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    @Column
+    String token;
 
-	public String getEmail() {
-		return email;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public String getPrenom() {
-		return prenom;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public void setPrenom(String prenom) {
-		this.prenom = prenom;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public String getNom() {
-		return nom;
-	}
+    public String getPrenom() {
+        return prenom;
+    }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
 
-	public Set<Application> getApplications() {
-		return applications;
-	}
+    public String getNom() {
+        return nom;
+    }
 
-	public void setApplications(Set<Application> applications) {
-		this.applications = applications;
-	}
-	
-	
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
 }
