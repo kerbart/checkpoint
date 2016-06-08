@@ -6,6 +6,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.kerbart.checkpoint.helper.TokenHelper;
+
 @Entity
 public class Utilisateur {
 
@@ -31,6 +33,11 @@ public class Utilisateur {
 
     @Column
     String token;
+
+    public Utilisateur() {
+        super();
+        this.token = TokenHelper.generateToken();
+    }
 
     public Long getId() {
         return id;

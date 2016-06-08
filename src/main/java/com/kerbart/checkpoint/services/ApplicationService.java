@@ -11,7 +11,6 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
-import com.kerbart.checkpoint.helper.TokenHelper;
 import com.kerbart.checkpoint.model.Application;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.model.UtilisateurApplication;
@@ -40,7 +39,6 @@ public class ApplicationService {
     public Application createApp(String name) {
         Application app = new Application();
         app.setName(name);
-        app.setToken(TokenHelper.generateToken());
         em.persist(app);
         return app;
     }
@@ -74,7 +72,7 @@ public class ApplicationService {
      */
     public List<Utilisateur> getUtilisateursByApplication(String applicationToken) {
         Query query = em
-                .createQuery("select ua.utilisateur from UtilisateurApplication uawhere ua.application.token = :token")
+                .createQuery("select ua.utilisateur from UtilisateurApplication ua where ua.application.token = :token")
                 .setParameter("token", applicationToken);
         return (List<Utilisateur>) query.getResultList();
     }
@@ -125,18 +123,6 @@ public class ApplicationService {
             return true;
         }
         return false;
-    }
-
-    public void wipeAll() {
-        Query query = em.createQuery("select ua " + " from UtilisateurApplication ua ");
-        for (UtilisateurApplication ua : (List<UtilisateurApplication>) query.getResultList()) {
-            em.remove(ua);
-        }
-
-        Query query2 = em.createQuery("select a " + " from Application a ");
-        for (Application a : (List<Application>) query2.getResultList()) {
-            em.remove(a);
-        }
     }
 
 }

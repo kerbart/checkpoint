@@ -2,10 +2,12 @@ package com.kerbart.checkpoint.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -13,6 +15,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import com.kerbart.checkpoint.helper.TokenHelper;
 
 @Entity
 public class TourneeOccurence implements Serializable {
@@ -25,7 +29,7 @@ public class TourneeOccurence implements Serializable {
     @ManyToOne
     Tournee tournee;
 
-    @OneToMany(mappedBy = "tourneeOccurence")
+    @OneToMany(mappedBy = "tourneeOccurence", fetch = FetchType.EAGER)
     Set<PatientDansTournee> patients;
 
     @Column
@@ -38,6 +42,14 @@ public class TourneeOccurence implements Serializable {
 
     @Column
     Double total;
+
+    String token;
+
+    public TourneeOccurence() {
+        super();
+        this.token = TokenHelper.generateToken();
+        this.patients = new HashSet<PatientDansTournee>();
+    }
 
     public Long getId() {
         return id;
@@ -86,4 +98,13 @@ public class TourneeOccurence implements Serializable {
     public void setTotal(Double total) {
         this.total = total;
     }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
 }

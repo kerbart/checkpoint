@@ -6,4 +6,6 @@ import com.kerbart.checkpoint.model.Tournee;
 
 public interface TourneeRepository extends CrudRepository<Tournee, Long> {
 
+    Tournee findByToken(String token);
+
 }

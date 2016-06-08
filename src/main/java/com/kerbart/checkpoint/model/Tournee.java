@@ -12,6 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.kerbart.checkpoint.helper.TokenHelper;
+
 @Entity
 public class Tournee implements Serializable {
 
@@ -27,8 +29,26 @@ public class Tournee implements Serializable {
     @Temporal(TemporalType.TIME)
     Date dateCreation;
 
+    @Column
+    String token;
+
     @ManyToOne
     Application application;
+
+    public Tournee() {
+        super();
+        this.token = TokenHelper.generateToken();
+    }
+
+    public Tournee(String name) {
+        this();
+        this.name = name;
+    }
+
+    public Tournee(Application application, String name) {
+        this(name);
+        this.application = application;
+    }
 
     public Long getId() {
         return id;
@@ -60,5 +80,13 @@ public class Tournee implements Serializable {
 
     public void setDateCreation(Date dateCreation) {
         this.dateCreation = dateCreation;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

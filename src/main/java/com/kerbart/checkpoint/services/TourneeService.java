@@ -13,9 +13,11 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.PatientDansTournee;
 import com.kerbart.checkpoint.model.Tournee;
 import com.kerbart.checkpoint.model.TourneeOccurence;
+import com.kerbart.checkpoint.repositories.TourneeOccurenceRepository;
 import com.kerbart.checkpoint.repositories.TourneeRepository;
 
 @Repository("tourneeService")
@@ -28,9 +30,11 @@ public class TourneeService {
     @Inject
     TourneeRepository tourneeRepository;
 
+    @Inject
+    TourneeOccurenceRepository tourneeOccurenceRepository;
+
     public Tournee createTournee(Application application, String name) {
-        Tournee tournee = new Tournee();
-        tournee.setApplication(application);
+        Tournee tournee = new Tournee(application, name);
         tournee.setDateCreation(new Date());
         tournee.setName(name);
         em.persist(tournee);
@@ -45,10 +49,38 @@ public class TourneeService {
         return tourneeOccurence;
     }
 
-    public PatientDansTournee addToTourneeOccurence(TourneeOccurence to, PatientDansTournee pdt) {
-        to.getPatients().add(pdt);
-        em.persist(to);
+    public PatientDansTournee addPatientToTourneeOccurence(TourneeOccurence tourneeOccurence, Patient patient,
+            Integer ordre) {
+        PatientDansTournee pdt = new PatientDansTournee();
+        pdt.setOrdre(ordre);
+        pdt.setPatient(patient);
+        return addPatientToTourneeOccurence(tourneeOccurence, pdt);
+    }
+
+    public TourneeOccurence findTourneeOccurenceByToken(String token) {
+        return tourneeOccurenceRepository.findByToken(token);
+    }
+
+    public Tournee findTourneeByToken(String token) {
+        return tourneeRepository.findByToken(token);
+    }
+
+    public PatientDansTournee addPatientToTourneeOccurence(TourneeOccurence tourneeOccurence, PatientDansTournee pdt) {
+        pdt.setTourneeOccurence(tourneeOccurence);
+        em.persist(pdt);
         return pdt;
+    }
+
+    public List<Tournee> listTourneeByApplication(String appToken) {
+        Query query = em.createQuery("select t from Tournee t  where t.application.token = :token")
+                .setParameter("token", appToken);
+        return (List<Tournee>) query.getResultList();
+    }
+
+    public List<TourneeOccurence> listTourneeOccurenceByTournee(String tourneeToken) {
+        Query query = em.createQuery("select to from TourneeOccurence to  where to.tournee.token = :token")
+                .setParameter("token", tourneeToken);
+        return (List<TourneeOccurence>) query.getResultList();
     }
 
     public TourneeOccurence duplicateTourneeOccurence(TourneeOccurence tourneeOccurence, Date newDate) {
@@ -59,25 +91,15 @@ public class TourneeService {
         em.persist(tourneeOccurenceNew);
         for (PatientDansTournee pdt : tourneeOccurence.getPatients()) {
             PatientDansTournee pdtClone = new PatientDansTournee();
-            pdtClone.setPersonne(pdt.getPersonne());
+
+            pdtClone.setPatient(pdt.getPatient());
             pdtClone.setOrdre(pdt.getOrdre());
             pdtClone.setTarif(pdt.getTarif());
             em.persist(pdtClone);
-            addToTourneeOccurence(tourneeOccurenceNew, pdtClone);
+            addPatientToTourneeOccurence(tourneeOccurenceNew, pdtClone);
         }
 
         return tourneeOccurenceNew;
-    }
-
-    public void wipeAll() {
-        Query query = em.createQuery("select to from TourneeOccurence to ");
-        for (TourneeOccurence to : (List<TourneeOccurence>) query.getResultList()) {
-            em.remove(to);
-        }
-        Query query2 = em.createQuery("select t from Tournee t ");
-        for (Tournee t : (List<Tournee>) query2.getResultList()) {
-            em.remove(t);
-        }
     }
 
 }

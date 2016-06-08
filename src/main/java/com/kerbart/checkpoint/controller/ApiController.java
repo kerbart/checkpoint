@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,15 +17,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.kerbart.checkpoint.controller.dto.PatientDTO;
 import com.kerbart.checkpoint.controller.dto.UserLoginDTO;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
+import com.kerbart.checkpoint.controller.responses.PatientResponse;
 import com.kerbart.checkpoint.controller.responses.UtilisateurResponse;
+import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
 import com.kerbart.checkpoint.services.ApplicationService;
+import com.kerbart.checkpoint.services.PatientService;
 import com.kerbart.checkpoint.services.UtilisateurService;
 
 import io.swagger.annotations.Api;
@@ -45,6 +51,9 @@ public class ApiController {
 
     @Inject
     ApplicationService applicationService;
+
+    @Inject
+    PatientService patientService;
 
     @ApiOperation(value = "User login")
     @RequestMapping(value = "/user/login", produces = "application/json", method = RequestMethod.POST)
@@ -109,6 +118,30 @@ public class ApiController {
             }
         }
         return listMyApplication(token);
+    }
+
+    @ApiOperation(value = "Patient creation")
+    @RequestMapping(value = "/user/{token}/patient/create", produces = "application/json", method = RequestMethod.POST)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<PatientResponse> createNewPatient(@RequestBody PatientDTO patientDto) {
+        Utilisateur utilisateur = utilisateurRepository.findByToken(patientDto.getUtilisateurToken());
+        if (utilisateur == null) {
+            return new ResponseEntity<PatientResponse>(new PatientResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
+        }
+        if (!applicationService.checkApplicationBelongsUtilisateur(patientDto.getApplicationToken(),
+                patientDto.getUtilisateurToken())) {
+            return new ResponseEntity<PatientResponse>(
+                    new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+        }
+        Patient patient = new Patient();
+        BeanUtils.copyProperties(patientDto, patient);
+        try {
+            Patient result = patientService.createPatient(patient, patientDto.getApplicationToken());
+            return new ResponseEntity<PatientResponse>(new PatientResponse(result), HttpStatus.OK);
+        } catch (ApplicationDoesNotExistException e) {
+            PatientResponse response = new PatientResponse(ErrorCode.APPLICATION_UNKNOWN);
+            return new ResponseEntity<PatientResponse>(response, HttpStatus.OK);
+        }
     }
 
 }

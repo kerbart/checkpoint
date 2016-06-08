@@ -18,7 +18,7 @@ public class PatientDansTournee implements Serializable {
     Long id;
 
     @ManyToOne
-    Patient personne;
+    Patient patient;
 
     @Column
     Double tarif;
@@ -37,12 +37,20 @@ public class PatientDansTournee implements Serializable {
         this.id = id;
     }
 
-    public Patient getPersonne() {
-        return personne;
+    public Patient getPatient() {
+        return patient;
     }
 
-    public void setPersonne(Patient personne) {
-        this.personne = personne;
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public TourneeOccurence getTourneeOccurence() {
+        return tourneeOccurence;
+    }
+
+    public void setTourneeOccurence(TourneeOccurence tourneeOccurence) {
+        this.tourneeOccurence = tourneeOccurence;
     }
 
     public Double getTarif() {

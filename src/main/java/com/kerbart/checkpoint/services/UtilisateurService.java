@@ -11,7 +11,6 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
-import com.kerbart.checkpoint.helper.TokenHelper;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
 
@@ -35,8 +34,6 @@ public class UtilisateurService {
         utilisateur.setPassword(encryptService.encryptPassword(password));
         utilisateur.setNom(nom);
         utilisateur.setPrenom(prenom);
-        utilisateur.setToken(TokenHelper.generateToken());
-
         return create(utilisateur);
     }
 
@@ -68,13 +65,6 @@ public class UtilisateurService {
     public List<Utilisateur> listUsers() {
         Query query = em.createQuery("select u from Utilisateur u");
         return query.getResultList();
-    }
-
-    public void removeAllUsers() {
-        List<Utilisateur> utilisateurs = this.listUsers();
-        for (Utilisateur utilisateur : utilisateurs) {
-            em.remove(utilisateur);
-        }
     }
 
 }
