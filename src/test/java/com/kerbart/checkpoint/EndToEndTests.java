@@ -17,6 +17,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Application;
@@ -181,15 +182,15 @@ public class EndToEndTests {
     @Test
     @DirtiesContext
     public void shouldCreateUserApplicationTourneeOrrurenceAndPatients()
-            throws UserAlreadyAssociatedException, UserAlreadyExistsException {
+            throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
         Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
         Application app = applicationService.createApp("My App");
         applicationService.associateApplicationToUser(app, u);
         Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
         TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-        Patient p1 = patientService.createPatient(createRandomPatient(), app);
-        Patient p2 = patientService.createPatient(createRandomPatient(), app);
-        Patient p3 = patientService.createPatient(createRandomPatient(), app);
+        Patient p1 = patientService.createPatient(createRandomPatient(), app.getToken());
+        Patient p2 = patientService.createPatient(createRandomPatient(), app.getToken());
+        Patient p3 = patientService.createPatient(createRandomPatient(), app.getToken());
         tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p1, 1);
         tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p2, 2);
         tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p3, 3);
