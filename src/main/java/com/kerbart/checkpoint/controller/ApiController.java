@@ -1,6 +1,7 @@
 package com.kerbart.checkpoint.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -18,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.kerbart.checkpoint.controller.dto.PatientDTO;
+import com.kerbart.checkpoint.controller.dto.PatientSearchDTO;
 import com.kerbart.checkpoint.controller.dto.UserLoginDTO;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
 import com.kerbart.checkpoint.controller.responses.PatientResponse;
+import com.kerbart.checkpoint.controller.responses.PatientsResponse;
 import com.kerbart.checkpoint.controller.responses.UtilisateurResponse;
 import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
@@ -28,6 +31,7 @@ import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Application;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.Utilisateur;
+import com.kerbart.checkpoint.repositories.PatientRepository;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
 import com.kerbart.checkpoint.services.ApplicationService;
 import com.kerbart.checkpoint.services.PatientService;
@@ -54,6 +58,9 @@ public class ApiController {
 
     @Inject
     PatientService patientService;
+
+    @Inject
+    PatientRepository patientRepository;
 
     @ApiOperation(value = "User login")
     @RequestMapping(value = "/user/login", produces = "application/json", method = RequestMethod.POST)
@@ -121,7 +128,7 @@ public class ApiController {
     }
 
     @ApiOperation(value = "Patient creation")
-    @RequestMapping(value = "/user/{token}/patient/create", produces = "application/json", method = RequestMethod.POST)
+    @RequestMapping(value = "/patient/create", produces = "application/json", method = RequestMethod.POST)
     @CrossOrigin(origins = "*")
     public ResponseEntity<PatientResponse> createNewPatient(@RequestBody PatientDTO patientDto) {
         Utilisateur utilisateur = utilisateurRepository.findByToken(patientDto.getUtilisateurToken());
@@ -134,7 +141,7 @@ public class ApiController {
                     new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
         }
         Patient patient = new Patient();
-        BeanUtils.copyProperties(patientDto, patient);
+        BeanUtils.copyProperties(patientDto.getPatient(), patient);
         try {
             Patient result = patientService.createPatient(patient, patientDto.getApplicationToken());
             return new ResponseEntity<PatientResponse>(new PatientResponse(result), HttpStatus.OK);
@@ -142,6 +149,92 @@ public class ApiController {
             PatientResponse response = new PatientResponse(ErrorCode.APPLICATION_UNKNOWN);
             return new ResponseEntity<PatientResponse>(response, HttpStatus.OK);
         }
+    }
+
+    @ApiOperation(value = "Patient update")
+    @RequestMapping(value = "/patient/update", produces = "application/json", method = RequestMethod.POST)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<PatientResponse> updatePatient(@RequestBody PatientDTO patientDto) {
+        Utilisateur utilisateur = utilisateurRepository.findByToken(patientDto.getUtilisateurToken());
+        if (utilisateur == null) {
+            return new ResponseEntity<PatientResponse>(new PatientResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
+        }
+        if (!applicationService.checkApplicationBelongsUtilisateur(patientDto.getApplicationToken(),
+                patientDto.getUtilisateurToken())) {
+            return new ResponseEntity<PatientResponse>(
+                    new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+        }
+        Patient patient = patientRepository.findByToken(patientDto.getPatient().getToken());
+        if (patient == null) {
+            PatientResponse response = new PatientResponse(ErrorCode.PATIENT_UNKNOWN);
+            return new ResponseEntity<PatientResponse>(response, HttpStatus.OK);
+        }
+
+        BeanUtils.copyProperties(patientDto.getPatient(), patient);
+        try {
+            Patient result = patientService.updatePatient(patient, patientDto.getApplicationToken());
+            return new ResponseEntity<PatientResponse>(new PatientResponse(result), HttpStatus.OK);
+        } catch (ApplicationDoesNotExistException e) {
+            PatientResponse response = new PatientResponse(ErrorCode.APPLICATION_UNKNOWN);
+            return new ResponseEntity<PatientResponse>(response, HttpStatus.OK);
+        }
+    }
+
+    @ApiOperation(value = "Patient liste")
+    @RequestMapping(value = "/patient/list", produces = "application/json", method = RequestMethod.POST)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<PatientsResponse> listPatient(@RequestBody PatientSearchDTO patientSearchDto) {
+        Utilisateur utilisateur = utilisateurRepository.findByToken(patientSearchDto.getUtilisateurToken());
+        if (utilisateur == null) {
+            return new ResponseEntity<PatientsResponse>(new PatientsResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
+        }
+        if (!applicationService.checkApplicationBelongsUtilisateur(patientSearchDto.getApplicationToken(),
+                patientSearchDto.getUtilisateurToken())) {
+            return new ResponseEntity<PatientsResponse>(
+                    new PatientsResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+        }
+        List<Patient> patients = patientRepository.findAllByApplication(patientSearchDto.getApplicationToken());
+
+        PatientsResponse response = new PatientsResponse(patients);
+        return new ResponseEntity<PatientsResponse>(response, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Populate")
+    @RequestMapping(value = "/populate", produces = "application/json", method = RequestMethod.POST)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<HashMap<String, String>> populate() {
+        HashMap<String, String> resp = new HashMap<String, String>();
+
+        UserLoginDTO credentials = new UserLoginDTO();
+        credentials.setEmail("damien@kerbart.com");
+        credentials.setPassword("toto1234");
+        UtilisateurResponse utilisateurResponse = this.signIn(credentials).getBody();
+
+        Application app = this.createNewApplication(utilisateurResponse.getUtilisateur().getToken(), "My App").getBody()
+                .get(0);
+        PatientDTO patientDto1 = new PatientDTO();
+        Patient p = new Patient();
+        p.setNom("KERBART");
+        p.setPrenom("Damien");
+        patientDto1.setPatient(p);
+        patientDto1.setUtilisateurToken(utilisateurResponse.getUtilisateur().getToken());
+        patientDto1.setApplicationToken(app.getToken());
+        this.createNewPatient(patientDto1);
+
+        PatientDTO patientDto2 = new PatientDTO();
+        Patient p2 = new Patient();
+        p2.setNom("KERBART");
+        p2.setPrenom("David");
+        patientDto2.setPatient(p2);
+        patientDto2.setUtilisateurToken(utilisateurResponse.getUtilisateur().getToken());
+        patientDto2.setApplicationToken(app.getToken());
+        this.createNewPatient(patientDto2);
+
+        resp.put("userToken", utilisateurResponse.getUtilisateur().getToken());
+        resp.put("applicationToken", app.getToken());
+
+        return new ResponseEntity<HashMap<String, String>>(resp, HttpStatus.OK);
+
     }
 
 }

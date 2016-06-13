@@ -25,6 +25,7 @@ import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.Tournee;
 import com.kerbart.checkpoint.model.TourneeOccurence;
 import com.kerbart.checkpoint.model.Utilisateur;
+import com.kerbart.checkpoint.repositories.PatientRepository;
 import com.kerbart.checkpoint.services.ApplicationService;
 import com.kerbart.checkpoint.services.PatientService;
 import com.kerbart.checkpoint.services.TourneeService;
@@ -48,6 +49,9 @@ public class EndToEndTests {
 
     @Inject
     PatientService patientService;
+
+    @Inject
+    PatientRepository patientRepository;
 
     private void wipeAll() {
 
@@ -221,6 +225,26 @@ public class EndToEndTests {
                 }
             }
         }
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldCreateUserApplicationPatientAndUpdateIt()
+            throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+        Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+        Application app = applicationService.createApp("My App");
+        applicationService.associateApplicationToUser(app, u);
+        Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
+        TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
+        Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
+
+        patient.setNom("BIDULE");
+        patientService.updatePatient(patient, app.getToken());
+
+        Patient retrievedPatient = patientRepository.findByToken(patient.getToken());
+
+        assertEquals("BIDULE", retrievedPatient.getNom());
+
     }
 
     private Patient createRandomPatient() {

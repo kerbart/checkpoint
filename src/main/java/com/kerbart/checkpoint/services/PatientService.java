@@ -34,6 +34,15 @@ public class PatientService {
         return patient;
     }
 
+    public Patient updatePatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
+        Application app = applicationRepository.findByToken(applicationToken);
+        if (app == null) {
+            throw new ApplicationDoesNotExistException();
+        }
+        patient.setApplication(app);
+        return em.merge(patient);
+    }
+
     public PatientDansTournee findPatientDansTourneeOccurence(String patientToken, String tourneeOccurenceToken) {
         Query query = em
                 .createQuery("select pdt from PatientDansTournee pdt "
