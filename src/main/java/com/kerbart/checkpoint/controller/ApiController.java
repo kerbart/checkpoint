@@ -112,11 +112,12 @@ public class ApiController {
     @ApiOperation(value = "App creation")
     @RequestMapping(value = "/user/{token}/app/create", produces = "application/json", method = RequestMethod.POST)
     @CrossOrigin(origins = "*")
-    public ResponseEntity<List<Application>> createNewApplication(@PathVariable("token") String token,
+    public ResponseEntity<Application> createNewApplication(@PathVariable("token") String token,
             @RequestBody String appName) {
         Utilisateur utilisateur = utilisateurRepository.findByToken(token);
+        Application application = null;
         if (utilisateur != null) {
-            Application application = applicationService.createApp(appName);
+            application = applicationService.createApp(appName);
             try {
                 applicationService.associateApplicationToUser(application, utilisateur);
             } catch (UserAlreadyAssociatedException e) {
@@ -124,7 +125,7 @@ public class ApiController {
                 e.printStackTrace();
             }
         }
-        return listMyApplication(token);
+        return new ResponseEntity<Application>(application, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Patient creation")
@@ -180,6 +181,29 @@ public class ApiController {
         }
     }
 
+    @ApiOperation(value = "Patient load")
+    @RequestMapping(value = "/patient/load", produces = "application/json", method = RequestMethod.POST)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<PatientResponse> loadPatient(@RequestBody PatientDTO patientDto) {
+        Utilisateur utilisateur = utilisateurRepository.findByToken(patientDto.getUtilisateurToken());
+        if (utilisateur == null) {
+            return new ResponseEntity<PatientResponse>(new PatientResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
+        }
+        if (!applicationService.checkApplicationBelongsUtilisateur(patientDto.getApplicationToken(),
+                patientDto.getUtilisateurToken())) {
+            return new ResponseEntity<PatientResponse>(
+                    new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+        }
+        Patient patient = patientRepository.findByToken(patientDto.getPatient().getToken());
+        if (patient == null) {
+            PatientResponse response = new PatientResponse(ErrorCode.PATIENT_UNKNOWN);
+            return new ResponseEntity<PatientResponse>(response, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<PatientResponse>(new PatientResponse(patient), HttpStatus.OK);
+
+    }
+
     @ApiOperation(value = "Patient liste")
     @RequestMapping(value = "/patient/list", produces = "application/json", method = RequestMethod.POST)
     @CrossOrigin(origins = "*")
@@ -210,8 +234,8 @@ public class ApiController {
         credentials.setPassword("toto1234");
         UtilisateurResponse utilisateurResponse = this.signIn(credentials).getBody();
 
-        Application app = this.createNewApplication(utilisateurResponse.getUtilisateur().getToken(), "My App").getBody()
-                .get(0);
+        Application app = this.createNewApplication(utilisateurResponse.getUtilisateur().getToken(), "My App")
+                .getBody();
         PatientDTO patientDto1 = new PatientDTO();
         Patient p = new Patient();
         p.setNom("KERBART");

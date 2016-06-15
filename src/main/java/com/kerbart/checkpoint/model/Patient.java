@@ -48,6 +48,9 @@ public class Patient {
     @Column
     String numeroSS;
 
+    @Column
+    String telephone;
+
     @Temporal(TemporalType.DATE)
     Date dateCreation;
 
@@ -181,4 +184,13 @@ public class Patient {
     public void setApplication(Application application) {
         this.application = application;
     }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
 }
