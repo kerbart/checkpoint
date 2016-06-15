@@ -3,9 +3,15 @@ package com.kerbart.checkpoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -21,6 +27,7 @@ import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.Tournee;
 import com.kerbart.checkpoint.model.TourneeOccurence;
@@ -245,6 +252,39 @@ public class EndToEndTests {
 
         assertEquals("BIDULE", retrievedPatient.getNom());
 
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldCreateUserApplicationPatientAndOrdonance()
+            throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+        Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+        Application app = applicationService.createApp("My App");
+        applicationService.associateApplicationToUser(app, u);
+        Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
+        TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
+        Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
+        try {
+            Ordonnance ordonnance = patientService.createOrdonance(patient, app.getToken(), new Date(), new Date(),
+                    extractBytes("/Users/damien/images/images_test/ordonnance.jpg"));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    public byte[] extractBytes(String ImageName) throws IOException {
+        // open image
+        File imgPath = new File(ImageName);
+        BufferedImage bufferedImage = ImageIO.read(imgPath);
+
+        // get DataBufferBytes from Raster
+        WritableRaster raster = bufferedImage.getRaster();
+        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+
+        return (data.getData());
     }
 
     private Patient createRandomPatient() {

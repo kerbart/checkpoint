@@ -57,6 +57,13 @@ public class Patient {
     @Column
     Boolean actif;
 
+    @Temporal(TemporalType.DATE)
+    @Column
+    Date dateNaissance;
+
+    @Column
+    String commentaires;
+
     @ManyToOne(optional = false)
     Application application;
 
@@ -191,6 +198,22 @@ public class Patient {
 
     public void setTelephone(String telephone) {
         this.telephone = telephone;
+    }
+
+    public Date getDateNaissance() {
+        return dateNaissance;
+    }
+
+    public void setDateNaissance(Date dateNaissance) {
+        this.dateNaissance = dateNaissance;
+    }
+
+    public String getCommentaires() {
+        return commentaires;
+    }
+
+    public void setCommentaires(String commentaires) {
+        this.commentaires = commentaires;
     }
 
 }
