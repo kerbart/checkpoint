@@ -32,6 +32,7 @@ import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.Tournee;
 import com.kerbart.checkpoint.model.TourneeOccurence;
 import com.kerbart.checkpoint.model.Utilisateur;
+import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
 import com.kerbart.checkpoint.repositories.PatientRepository;
 import com.kerbart.checkpoint.services.ApplicationService;
 import com.kerbart.checkpoint.services.PatientService;
@@ -59,6 +60,9 @@ public class EndToEndTests {
 
     @Inject
     PatientRepository patientRepository;
+
+    @Inject
+    OrdonnanceRepository ordonnanceRepository;
 
     private void wipeAll() {
 
@@ -264,14 +268,10 @@ public class EndToEndTests {
         Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
         TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
         Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
-        try {
-            Ordonnance ordonnance = patientService.createOrdonance(patient, app.getToken(), new Date(), new Date(),
-                    extractBytes("/Users/damien/images/images_test/ordonnance.jpg"));
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        Ordonnance ordonnance = patientService.createOrdonance(patient, app.getToken(), new Date(), new Date());
+        patientService.addFileOrdonance(app.getToken(), ordonnance.getToken(), "image/png", "Du contenu".getBytes());
+        ordonnance = ordonnanceRepository.findByToken(ordonnance.getToken());
+        assertEquals(1, ordonnance.getFiles().size());
 
     }
 

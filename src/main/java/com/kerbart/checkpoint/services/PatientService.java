@@ -1,5 +1,9 @@
 package com.kerbart.checkpoint.services;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import javax.inject.Inject;
@@ -15,7 +19,9 @@ import com.kerbart.checkpoint.model.Application;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.PatientDansTournee;
+import com.kerbart.checkpoint.model.SecuredFile;
 import com.kerbart.checkpoint.repositories.ApplicationRepository;
+import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
 
 @Repository("patientService")
 @Transactional
@@ -26,6 +32,12 @@ public class PatientService {
 
     @Inject
     ApplicationRepository applicationRepository;
+
+    @Inject
+    OrdonnanceRepository ordonnanceRepository;
+
+    @Inject
+    FileService fileService;
 
     public Patient createPatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
         Application app = applicationRepository.findByToken(applicationToken);
@@ -50,18 +62,41 @@ public class PatientService {
         return ordonnance;
     }
 
-    public Ordonnance createOrdonance(Patient patient, String applicationToken, Date dateDebut, Date dateFin,
-            byte[] photo) throws ApplicationDoesNotExistException {
+    public SecuredFile addFileOrdonance(String applicationToken, String ordonnanceToken, String contentType,
+            byte[] bytes) throws ApplicationDoesNotExistException {
         Application app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
-        Ordonnance ordonnance = new Ordonnance(patient);
-        ordonnance.setDateDebut(dateDebut);
-        ordonnance.setDateFin(dateFin);
-        ordonnance.setPhoto(photo);
-        em.persist(ordonnance);
-        return ordonnance;
+        Ordonnance ordonnance = ordonnanceRepository.findByToken(ordonnanceToken);
+        SecuredFile securedFile = new SecuredFile();
+        securedFile.setOrdonnance(ordonnance);
+        securedFile.setDateCreation(new Date());
+        securedFile.setContentType(contentType);
+        String path = fileService.storeFile(app.getToken(), fileService.convertToFile(bytes));
+        securedFile.setPath(path);
+        em.persist(securedFile);
+
+        return securedFile;
+    }
+
+    public byte[] getFileOrdonnance(String applicationToken, String ordonnanceToken)
+            throws ApplicationDoesNotExistException {
+        Application app = applicationRepository.findByToken(applicationToken);
+        if (app == null) {
+            throw new ApplicationDoesNotExistException();
+        }
+        Query query = em.createQuery("select s from SecuredFile s " + " where s.ordonnance.token = :ordonnanceToken ")
+                .setParameter("ordonnanceToken", ordonnanceToken);
+
+        SecuredFile sec = (SecuredFile) query.getSingleResult();
+        File decryptedFile = fileService.decryptFile(applicationToken, new File(sec.getPath()));
+        try {
+            byte[] content = Files.readAllBytes(Paths.get(decryptedFile.getAbsolutePath()));
+            return content;
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public Patient updatePatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {

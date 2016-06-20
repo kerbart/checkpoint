@@ -1,15 +1,23 @@
 package com.kerbart.checkpoint.model;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import com.kerbart.checkpoint.helper.TokenHelper;
 
+@Entity
 public class Ordonnance {
 
     @Id
@@ -18,9 +26,11 @@ public class Ordonnance {
     Long id;
 
     @Column
+    @Temporal(TemporalType.DATE)
     Date dateDebut;
 
     @Column
+    @Temporal(TemporalType.DATE)
     Date dateFin;
 
     @ManyToOne
@@ -29,8 +39,8 @@ public class Ordonnance {
     @Column
     String token;
 
-    @Column
-    byte[] photo;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ordonnance", fetch = FetchType.EAGER)
+    List<SecuredFile> files;
 
     public Ordonnance() {
         super();
@@ -82,11 +92,12 @@ public class Ordonnance {
         this.token = token;
     }
 
-    public byte[] getPhoto() {
-        return photo;
+    public List<SecuredFile> getFiles() {
+        return files;
     }
 
-    public void setPhoto(byte[] photo) {
-        this.photo = photo;
+    public void setFiles(List<SecuredFile> files) {
+        this.files = files;
     }
+
 }

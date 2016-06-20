@@ -1,11 +1,14 @@
 package com.kerbart.checkpoint.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -17,11 +20,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.kerbart.checkpoint.controller.dto.OrdonnanceDTO;
 import com.kerbart.checkpoint.controller.dto.PatientDTO;
 import com.kerbart.checkpoint.controller.dto.PatientSearchDTO;
 import com.kerbart.checkpoint.controller.dto.UserLoginDTO;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
+import com.kerbart.checkpoint.controller.responses.FileResponse;
+import com.kerbart.checkpoint.controller.responses.OrdonnanceResponse;
 import com.kerbart.checkpoint.controller.responses.PatientResponse;
 import com.kerbart.checkpoint.controller.responses.PatientsResponse;
 import com.kerbart.checkpoint.controller.responses.UtilisateurResponse;
@@ -29,7 +37,9 @@ import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
+import com.kerbart.checkpoint.model.SecuredFile;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.PatientRepository;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
@@ -223,6 +233,60 @@ public class ApiController {
         return new ResponseEntity<PatientsResponse>(response, HttpStatus.OK);
     }
 
+    @ApiOperation(value = "Ajout d'une ordonnance")
+    @RequestMapping(value = "/ordonnance/new", method = RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<OrdonnanceResponse> addOrdonnance(@RequestBody OrdonnanceDTO ordonnanceDto) {
+
+        Utilisateur utilisateur = utilisateurRepository.findByToken(ordonnanceDto.getUtilisateurToken());
+        if (utilisateur == null) {
+            return new ResponseEntity<OrdonnanceResponse>(new OrdonnanceResponse(ErrorCode.USER_UNKONWN),
+                    HttpStatus.OK);
+        }
+        if (!applicationService.checkApplicationBelongsUtilisateur(ordonnanceDto.getApplicationToken(),
+                ordonnanceDto.getUtilisateurToken())) {
+            return new ResponseEntity<OrdonnanceResponse>(
+                    new OrdonnanceResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+        }
+
+        Patient patient = patientRepository.findByToken(ordonnanceDto.getPatientToken());
+        if (patient == null) {
+            return new ResponseEntity<OrdonnanceResponse>(new OrdonnanceResponse(ErrorCode.PATIENT_UNKNOWN),
+                    HttpStatus.OK);
+        }
+
+        OrdonnanceResponse ordonnanceResponse = new OrdonnanceResponse();
+
+        Ordonnance ordonnance;
+        try {
+            ordonnance = patientService.createOrdonance(patient, ordonnanceDto.getApplicationToken(),
+                    ordonnanceDto.getOrdonnance().getDateDebut(), ordonnanceDto.getOrdonnance().getDateFin());
+            ordonnanceResponse.setOrdonnance(ordonnance);
+        } catch (ApplicationDoesNotExistException e) {
+            ordonnanceResponse.setError(ErrorCode.APPLICATION_UNKNOWN);
+        }
+
+        return new ResponseEntity<OrdonnanceResponse>(ordonnanceResponse, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Ajout un fichier a une ordonnance")
+    @RequestMapping(value = "/ordonnance/new/file", method = RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<FileResponse> addFileToOrdonnance(@RequestParam("applicationToken") String applicationToken,
+            @RequestParam("ordonnanceToken") String ordonnanceToken, @RequestParam("file") MultipartFile file) {
+        FileResponse fileResponse = new FileResponse();
+
+        try {
+            SecuredFile securedFile = patientService.addFileOrdonance(applicationToken, ordonnanceToken,
+                    file.getContentType(), IOUtils.toByteArray(file.getInputStream()));
+            fileResponse.setToken(securedFile.getToken());
+
+        } catch (ApplicationDoesNotExistException e) {
+            fileResponse.setError(ErrorCode.APPLICATION_UNKNOWN);
+        } catch (IOException e) {
+            fileResponse.setError(ErrorCode.FILE_UPLOAD_ERROR);
+        }
+        return new ResponseEntity<FileResponse>(fileResponse, HttpStatus.OK);
+    }
+
     @ApiOperation(value = "Populate")
     @RequestMapping(value = "/populate", produces = "application/json", method = RequestMethod.POST)
     @CrossOrigin(origins = "*")
@@ -243,19 +307,21 @@ public class ApiController {
         patientDto1.setPatient(p);
         patientDto1.setUtilisateurToken(utilisateurResponse.getUtilisateur().getToken());
         patientDto1.setApplicationToken(app.getToken());
-        this.createNewPatient(patientDto1);
+        Patient patient = this.createNewPatient(patientDto1).getBody().getPatient();
 
-        PatientDTO patientDto2 = new PatientDTO();
-        Patient p2 = new Patient();
-        p2.setNom("KERBART");
-        p2.setPrenom("David");
-        patientDto2.setPatient(p2);
-        patientDto2.setUtilisateurToken(utilisateurResponse.getUtilisateur().getToken());
-        patientDto2.setApplicationToken(app.getToken());
-        this.createNewPatient(patientDto2);
+        String ordoToken = "";
+        try {
+            Ordonnance ordo = patientService.createOrdonance(patient, app.getToken(), new Date(), new Date());
+            ordoToken = ordo.getToken();
+        } catch (ApplicationDoesNotExistException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         resp.put("userToken", utilisateurResponse.getUtilisateur().getToken());
         resp.put("applicationToken", app.getToken());
+        resp.put("patientToken", patient.getToken());
+        resp.put("ordoToken", ordoToken);
 
         return new ResponseEntity<HashMap<String, String>>(resp, HttpStatus.OK);
 
