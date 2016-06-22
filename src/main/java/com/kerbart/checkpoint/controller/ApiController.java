@@ -235,6 +235,7 @@ public class ApiController {
 
     @ApiOperation(value = "Ajout d'une ordonnance")
     @RequestMapping(value = "/ordonnance/new", method = RequestMethod.POST, produces = "application/json")
+    @CrossOrigin(origins = "*")
     public ResponseEntity<OrdonnanceResponse> addOrdonnance(@RequestBody OrdonnanceDTO ordonnanceDto) {
 
         Utilisateur utilisateur = utilisateurRepository.findByToken(ordonnanceDto.getUtilisateurToken());
@@ -270,13 +271,14 @@ public class ApiController {
 
     @ApiOperation(value = "Ajout un fichier a une ordonnance")
     @RequestMapping(value = "/ordonnance/new/file", method = RequestMethod.POST, produces = "application/json")
+    @CrossOrigin(origins = "*")
     public ResponseEntity<FileResponse> addFileToOrdonnance(@RequestParam("applicationToken") String applicationToken,
-            @RequestParam("ordonnanceToken") String ordonnanceToken, @RequestParam("file") MultipartFile file) {
+            @RequestParam("ordonnanceToken") String ordonnanceToken, @RequestParam("source") MultipartFile source) {
         FileResponse fileResponse = new FileResponse();
 
         try {
             SecuredFile securedFile = patientService.addFileOrdonance(applicationToken, ordonnanceToken,
-                    file.getContentType(), IOUtils.toByteArray(file.getInputStream()));
+                    source.getContentType(), IOUtils.toByteArray(source.getInputStream()));
             fileResponse.setToken(securedFile.getToken());
 
         } catch (ApplicationDoesNotExistException e) {
