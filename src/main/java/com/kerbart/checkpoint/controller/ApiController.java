@@ -30,6 +30,7 @@ import com.kerbart.checkpoint.controller.dto.UserLoginDTO;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
 import com.kerbart.checkpoint.controller.responses.FileResponse;
 import com.kerbart.checkpoint.controller.responses.OrdonnanceResponse;
+import com.kerbart.checkpoint.controller.responses.OrdonnancesResponse;
 import com.kerbart.checkpoint.controller.responses.PatientResponse;
 import com.kerbart.checkpoint.controller.responses.PatientsResponse;
 import com.kerbart.checkpoint.controller.responses.UtilisateurResponse;
@@ -287,6 +288,17 @@ public class ApiController {
             fileResponse.setError(ErrorCode.FILE_UPLOAD_ERROR);
         }
         return new ResponseEntity<FileResponse>(fileResponse, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Ajout un fichier a une ordonnance")
+    @RequestMapping(value = "/patient/ordonnances", method = RequestMethod.POST, produces = "application/json")
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<OrdonnancesResponse> listOrdonnances(
+            @RequestParam("applicationToken") String applicationToken,
+            @RequestParam("patientToken") String patientToken) {
+        OrdonnancesResponse response = new OrdonnancesResponse();
+
+        return new ResponseEntity<OrdonnancesResponse>(response, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Populate")
