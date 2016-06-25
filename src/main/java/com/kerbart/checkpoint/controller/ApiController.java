@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kerbart.checkpoint.controller.dto.OrdonnanceDTO;
@@ -290,17 +292,35 @@ public class ApiController {
         return new ResponseEntity<FileResponse>(fileResponse, HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Ajout un fichier a une ordonnance")
+    @ApiOperation(value = "Liste les ordonnances d'un patient")
     @RequestMapping(value = "/patient/ordonnances", method = RequestMethod.POST, produces = "application/json")
     @CrossOrigin(origins = "*")
     public ResponseEntity<OrdonnancesResponse> listOrdonnances(
             @RequestParam("applicationToken") String applicationToken,
             @RequestParam("patientToken") String patientToken) {
         OrdonnancesResponse response = new OrdonnancesResponse();
-
+       try {
+		List<Ordonnance> ordonnances =  patientService.getOrdonnances(applicationToken, patientToken);
+		response.setOrdonnances(ordonnances);
+	} catch (ApplicationDoesNotExistException e) {
+		response.setError(ErrorCode.APPLICATION_UNKNOWN);
+	}
         return new ResponseEntity<OrdonnancesResponse>(response, HttpStatus.OK);
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/patient/ordonnance/photo", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[] ordonnanceFile( @RequestParam("applicationToken") String applicationToken,
+    		 @RequestParam("fileToken") String fileToken) {
+    	try {
+			return patientService.getFileOrdonnance(applicationToken, fileToken);
+		} catch (ApplicationDoesNotExistException e) {
+			return null;
+		}
+    }
+    
+    
+    
     @ApiOperation(value = "Populate")
     @RequestMapping(value = "/populate", produces = "application/json", method = RequestMethod.POST)
     @CrossOrigin(origins = "*")

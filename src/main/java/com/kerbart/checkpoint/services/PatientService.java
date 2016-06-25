@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -80,14 +81,14 @@ public class PatientService {
         return securedFile;
     }
 
-    public byte[] getFileOrdonnance(String applicationToken, String ordonnanceToken)
+    public byte[] getFileOrdonnance(String applicationToken, String fileToken)
             throws ApplicationDoesNotExistException {
         Application app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
-        Query query = em.createQuery("select s from SecuredFile s " + " where s.ordonnance.token = :ordonnanceToken ")
-                .setParameter("ordonnanceToken", ordonnanceToken);
+        Query query = em.createQuery("select s from SecuredFile s " + " where s.token = :fileToken ")
+                .setParameter("fileToken", fileToken);
 
         SecuredFile sec = (SecuredFile) query.getSingleResult();
         File decryptedFile = fileService.decryptFile(applicationToken, new File(sec.getPath()));
@@ -97,6 +98,14 @@ public class PatientService {
         } catch (IOException e) {
             return null;
         }
+    }
+    
+    public List<Ordonnance> getOrdonnances(String applicationToken, String patientToken) throws ApplicationDoesNotExistException {
+    	 Application app = applicationRepository.findByToken(applicationToken);
+         if (app == null) {
+             throw new ApplicationDoesNotExistException();
+         }
+    	return ordonnanceRepository.findByPatientToken(patientToken);
     }
 
     public Patient updatePatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {

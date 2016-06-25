@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kerbart.checkpoint.helper.TokenHelper;
 
 @Entity
@@ -25,15 +26,18 @@ public class SecuredFile {
     @Column
     String token;
 
+    @JsonIgnore
     @Column
     String path;
 
     @Column
     String contentType;
 
+    @JsonIgnore
     @ManyToOne
     Ordonnance ordonnance;
 
+    @JsonIgnore
     @ManyToOne
     Patient patient;
 
