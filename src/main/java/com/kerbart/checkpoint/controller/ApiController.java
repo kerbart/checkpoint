@@ -109,6 +109,22 @@ public class ApiController {
 
     }
 
+    
+    @ApiOperation(value = "Check token")
+    @RequestMapping(value = "/user/{token}/check", produces = "application/json", method = RequestMethod.GET)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<UtilisateurResponse> checkUser(@PathVariable("token") String token) {
+        Utilisateur utilisateur = utilisateurRepository.findByToken(token);
+        UtilisateurResponse response = new UtilisateurResponse();
+        if (utilisateur != null) {
+        	response.setUtilisateur(utilisateur);
+            return new ResponseEntity<UtilisateurResponse>(response, HttpStatus.OK);
+        } else {
+        	response.setError(ErrorCode.USER_TOKEN_UNKNOWN);
+            return new ResponseEntity<UtilisateurResponse>(response, HttpStatus.OK);
+        }
+    }
+    
     @ApiOperation(value = "App list")
     @RequestMapping(value = "/user/{token}/app/list", produces = "application/json", method = RequestMethod.GET)
     @CrossOrigin(origins = "*")
