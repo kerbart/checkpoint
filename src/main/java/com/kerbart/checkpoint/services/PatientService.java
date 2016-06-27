@@ -17,11 +17,13 @@ import org.springframework.stereotype.Repository;
 
 import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.PatientDansTournee;
 import com.kerbart.checkpoint.model.SecuredFile;
 import com.kerbart.checkpoint.repositories.ApplicationRepository;
+import com.kerbart.checkpoint.repositories.CommentaireRepository;
 import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
 
 @Repository("patientService")
@@ -38,6 +40,9 @@ public class PatientService {
     OrdonnanceRepository ordonnanceRepository;
 
     @Inject
+    CommentaireRepository commentaireRepository;
+    
+    @Inject
     FileService fileService;
 
     public Patient createPatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
@@ -50,7 +55,7 @@ public class PatientService {
         return patient;
     }
 
-    public Ordonnance createOrdonance(Patient patient, String applicationToken, Date dateDebut, Date dateFin)
+    public Ordonnance createOrdonance(Patient patient, String applicationToken, Date dateDebut, Date dateFin, String commentaire)
             throws ApplicationDoesNotExistException {
         Application app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
@@ -61,6 +66,18 @@ public class PatientService {
         ordonnance.setDateFin(dateFin);
         em.persist(ordonnance);
         return ordonnance;
+    }
+    
+    public Commentaire createCommentaire(Patient patient, String applicationToken, String texte)
+            throws ApplicationDoesNotExistException {
+        Application app = applicationRepository.findByToken(applicationToken);
+        if (app == null) {
+            throw new ApplicationDoesNotExistException();
+        }
+        Commentaire commentaire = new Commentaire(patient);
+       
+        em.persist(commentaire);
+        return commentaire;
     }
 
     public SecuredFile addFileOrdonance(String applicationToken, String ordonnanceToken, String contentType,
@@ -107,6 +124,16 @@ public class PatientService {
          }
     	return ordonnanceRepository.findByPatientToken(patientToken);
     }
+    
+    
+    public List<Commentaire> getCommentaires(String applicationToken, String patientToken) throws ApplicationDoesNotExistException {
+    	Application app = applicationRepository.findByToken(applicationToken);
+        if (app == null) {
+            throw new ApplicationDoesNotExistException();
+        }
+    	return commentaireRepository.findByPatientToken(patientToken);
+    }
+    
 
     public Patient updatePatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
         Application app = applicationRepository.findByToken(applicationToken);

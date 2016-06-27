@@ -20,84 +20,107 @@ import com.kerbart.checkpoint.helper.TokenHelper;
 @Entity
 public class Ordonnance {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column
-    Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column
+	Long id;
 
-    @Column
-    @Temporal(TemporalType.DATE)
-    Date dateDebut;
+	@Column
+	@Temporal(TemporalType.DATE)
+	Date dateDebut;
 
-    @Column
-    @Temporal(TemporalType.DATE)
-    Date dateFin;
+	@Column
+	@Temporal(TemporalType.DATE)
+	Date dateFin;
 
-    @ManyToOne
-    Patient patient;
+	@Column
+	@Temporal(TemporalType.DATE)
+	Date dateCreation;
 
-    @Column
-    String token;
+	@Column
+	String commentaire;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ordonnance", fetch = FetchType.EAGER)
-    List<SecuredFile> files;
+	@ManyToOne
+	Patient patient;
 
-    public Ordonnance() {
-        super();
-        this.token = TokenHelper.generateToken();
-    }
+	@Column
+	String token;
 
-    public Ordonnance(Patient patient) {
-        this();
-        this.patient = patient;
-    }
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "ordonnance", fetch = FetchType.EAGER)
+	List<SecuredFile> files;
 
-    public Long getId() {
-        return id;
-    }
+	public Ordonnance() {
+		super();
+		this.dateCreation = new Date();
+		this.token = TokenHelper.generateToken();
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public Ordonnance(Patient patient) {
+		this();
+		this.patient = patient;
+	}
 
-    public Date getDateDebut() {
-        return dateDebut;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setDateDebut(Date dateDebut) {
-        this.dateDebut = dateDebut;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public Date getDateFin() {
-        return dateFin;
-    }
+	public Date getDateDebut() {
+		return dateDebut;
+	}
 
-    public void setDateFin(Date dateFin) {
-        this.dateFin = dateFin;
-    }
+	public void setDateDebut(Date dateDebut) {
+		this.dateDebut = dateDebut;
+	}
 
-    public Patient getPatient() {
-        return patient;
-    }
+	public Date getDateFin() {
+		return dateFin;
+	}
 
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-    }
+	public void setDateFin(Date dateFin) {
+		this.dateFin = dateFin;
+	}
 
-    public String getToken() {
-        return token;
-    }
+	public Patient getPatient() {
+		return patient;
+	}
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+	public void setPatient(Patient patient) {
+		this.patient = patient;
+	}
 
-    public List<SecuredFile> getFiles() {
-        return files;
-    }
+	public Date getDateCreation() {
+		return dateCreation;
+	}
 
-    public void setFiles(List<SecuredFile> files) {
-        this.files = files;
-    }
+	public void setDateCreation(Date dateCreation) {
+		this.dateCreation = dateCreation;
+	}
 
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public List<SecuredFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(List<SecuredFile> files) {
+		this.files = files;
+	}
+
+	public String getCommentaire() {
+		return commentaire;
+	}
+
+	public void setCommentaire(String commentaire) {
+		this.commentaire = commentaire;
+	}
 }

@@ -25,10 +25,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kerbart.checkpoint.controller.dto.CommentaireDTO;
 import com.kerbart.checkpoint.controller.dto.OrdonnanceDTO;
 import com.kerbart.checkpoint.controller.dto.PatientDTO;
 import com.kerbart.checkpoint.controller.dto.PatientSearchDTO;
 import com.kerbart.checkpoint.controller.dto.UserLoginDTO;
+import com.kerbart.checkpoint.controller.responses.CommentaireResponse;
+import com.kerbart.checkpoint.controller.responses.CommentairesResponse;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
 import com.kerbart.checkpoint.controller.responses.FileResponse;
 import com.kerbart.checkpoint.controller.responses.OrdonnanceResponse;
@@ -40,6 +43,7 @@ import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.SecuredFile;
@@ -278,8 +282,11 @@ public class ApiController {
 
         Ordonnance ordonnance;
         try {
-            ordonnance = patientService.createOrdonance(patient, ordonnanceDto.getApplicationToken(),
-                    ordonnanceDto.getOrdonnance().getDateDebut(), ordonnanceDto.getOrdonnance().getDateFin());
+            ordonnance = patientService.createOrdonance(patient, 
+            		ordonnanceDto.getApplicationToken(),
+                    ordonnanceDto.getOrdonnance().getDateDebut(), 
+                    ordonnanceDto.getOrdonnance().getDateFin(), 
+                    ordonnanceDto.getOrdonnance().getCommentaire());
             ordonnanceResponse.setOrdonnance(ordonnance);
         } catch (ApplicationDoesNotExistException e) {
             ordonnanceResponse.setError(ErrorCode.APPLICATION_UNKNOWN);
@@ -335,46 +342,57 @@ public class ApiController {
 		}
     }
     
-    
-    
-    @ApiOperation(value = "Populate")
-    @RequestMapping(value = "/populate", produces = "application/json", method = RequestMethod.POST)
+    @ApiOperation(value = "Ajout d'un commentaire patient")
+    @RequestMapping(value = "/commentaire/add", method = RequestMethod.POST, produces = "application/json")
     @CrossOrigin(origins = "*")
-    public ResponseEntity<HashMap<String, String>> populate() {
-        HashMap<String, String> resp = new HashMap<String, String>();
+    public ResponseEntity<CommentaireResponse> addOrdonnance(@RequestBody CommentaireDTO commentaireDto) {
 
-        UserLoginDTO credentials = new UserLoginDTO();
-        credentials.setEmail("damien@kerbart.com");
-        credentials.setPassword("toto1234");
-        UtilisateurResponse utilisateurResponse = this.signIn(credentials).getBody();
-
-        Application app = this.createNewApplication(utilisateurResponse.getUtilisateur().getToken(), "My App")
-                .getBody();
-        PatientDTO patientDto1 = new PatientDTO();
-        Patient p = new Patient();
-        p.setNom("KERBART");
-        p.setPrenom("Damien");
-        patientDto1.setPatient(p);
-        patientDto1.setUtilisateurToken(utilisateurResponse.getUtilisateur().getToken());
-        patientDto1.setApplicationToken(app.getToken());
-        Patient patient = this.createNewPatient(patientDto1).getBody().getPatient();
-
-        String ordoToken = "";
-        try {
-            Ordonnance ordo = patientService.createOrdonance(patient, app.getToken(), new Date(), new Date());
-            ordoToken = ordo.getToken();
-        } catch (ApplicationDoesNotExistException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        Utilisateur utilisateur = utilisateurRepository.findByToken(commentaireDto.getUtilisateurToken());
+        if (utilisateur == null) {
+            return new ResponseEntity<CommentaireResponse>(new CommentaireResponse(ErrorCode.USER_UNKONWN),
+                    HttpStatus.OK);
+        }
+        if (!applicationService.checkApplicationBelongsUtilisateur(commentaireDto.getApplicationToken(),
+        		commentaireDto.getUtilisateurToken())) {
+            return new ResponseEntity<CommentaireResponse>(
+                    new CommentaireResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
         }
 
-        resp.put("userToken", utilisateurResponse.getUtilisateur().getToken());
-        resp.put("applicationToken", app.getToken());
-        resp.put("patientToken", patient.getToken());
-        resp.put("ordoToken", ordoToken);
+        Patient patient = patientRepository.findByToken(commentaireDto.getPatientToken());
+        if (patient == null) {
+            return new ResponseEntity<CommentaireResponse>(new CommentaireResponse(ErrorCode.PATIENT_UNKNOWN),
+                    HttpStatus.OK);
+        }
 
-        return new ResponseEntity<HashMap<String, String>>(resp, HttpStatus.OK);
+        CommentaireResponse commentaireResponse = new CommentaireResponse();
 
+        Commentaire commentaire;
+        try {
+        	commentaire = patientService.createCommentaire(patient, commentaireDto.getApplicationToken(), commentaireDto.getCommentaire());
+            commentaireResponse.setCommentaire(commentaire);
+        } catch (ApplicationDoesNotExistException e) {
+            commentaireResponse.setError(ErrorCode.APPLICATION_UNKNOWN);
+        }
+
+        return new ResponseEntity<CommentaireResponse>(commentaireResponse, HttpStatus.OK);
     }
+    
+
+    @ApiOperation(value = "Liste les commentaires d'un patient")
+    @RequestMapping(value = "/patient/commentaires", method = RequestMethod.POST, produces = "application/json")
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<CommentairesResponse> listCommentaires(
+            @RequestParam("applicationToken") String applicationToken,
+            @RequestParam("patientToken") String patientToken) {
+    	CommentairesResponse response = new CommentairesResponse();
+       try {
+		List<Commentaire> commentaires =  patientService.getCommentaires(applicationToken, patientToken);
+		response.setCommentaires(commentaires);
+	} catch (ApplicationDoesNotExistException e) {
+		response.setError(ErrorCode.APPLICATION_UNKNOWN);
+	}
+        return new ResponseEntity<CommentairesResponse>(response, HttpStatus.OK);
+    }
+    
 
 }

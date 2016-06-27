@@ -268,7 +268,7 @@ public class EndToEndTests {
         Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
         TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
         Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
-        Ordonnance ordonnance = patientService.createOrdonance(patient, app.getToken(), new Date(), new Date());
+        Ordonnance ordonnance = patientService.createOrdonance(patient, app.getToken(), new Date(), new Date(), "");
         patientService.addFileOrdonance(app.getToken(), ordonnance.getToken(), "image/png", "Du contenu".getBytes());
         ordonnance = ordonnanceRepository.findByToken(ordonnance.getToken());
         assertEquals(1, ordonnance.getFiles().size());
