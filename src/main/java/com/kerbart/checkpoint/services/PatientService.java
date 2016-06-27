@@ -75,7 +75,7 @@ public class PatientService {
             throw new ApplicationDoesNotExistException();
         }
         Commentaire commentaire = new Commentaire(patient);
-       
+       commentaire.setTexte(texte);
         em.persist(commentaire);
         return commentaire;
     }
