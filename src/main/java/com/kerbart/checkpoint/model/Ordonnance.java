@@ -46,7 +46,7 @@ public class Ordonnance {
 	@Column
 	String token;
 	
-	@Column
+	@ManyToOne
 	Utilisateur createur;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "ordonnance", fetch = FetchType.EAGER)

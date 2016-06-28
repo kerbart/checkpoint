@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kerbart.checkpoint.helper.TokenHelper;
 
 @Entity
@@ -19,6 +20,7 @@ public class Utilisateur {
     @Column(unique = true)
     String email;
 
+    @JsonIgnore
     @Column
     String password;
 
