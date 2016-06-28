@@ -2,8 +2,6 @@ package com.kerbart.checkpoint.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -282,7 +280,7 @@ public class ApiController {
 
         Ordonnance ordonnance;
         try {
-            ordonnance = patientService.createOrdonance(patient, 
+            ordonnance = patientService.createOrdonance(utilisateur, patient, 
             		ordonnanceDto.getApplicationToken(),
                     ordonnanceDto.getOrdonnance().getDateDebut(), 
                     ordonnanceDto.getOrdonnance().getDateFin(), 
@@ -368,7 +366,7 @@ public class ApiController {
 
         Commentaire commentaire;
         try {
-        	commentaire = patientService.createCommentaire(patient, commentaireDto.getApplicationToken(), commentaireDto.getCommentaire());
+        	commentaire = patientService.createCommentaire(utilisateur, patient, commentaireDto.getApplicationToken(), commentaireDto.getCommentaire());
             commentaireResponse.setCommentaire(commentaire);
         } catch (ApplicationDoesNotExistException e) {
             commentaireResponse.setError(ErrorCode.APPLICATION_UNKNOWN);

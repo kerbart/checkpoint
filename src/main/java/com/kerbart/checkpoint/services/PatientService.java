@@ -22,6 +22,7 @@ import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.PatientDansTournee;
 import com.kerbart.checkpoint.model.SecuredFile;
+import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.ApplicationRepository;
 import com.kerbart.checkpoint.repositories.CommentaireRepository;
 import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
@@ -55,26 +56,28 @@ public class PatientService {
         return patient;
     }
 
-    public Ordonnance createOrdonance(Patient patient, String applicationToken, Date dateDebut, Date dateFin, String commentaire)
+    public Ordonnance createOrdonance(Utilisateur utilisateur, Patient patient, String applicationToken, Date dateDebut, Date dateFin, String commentaire)
             throws ApplicationDoesNotExistException {
         Application app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
         Ordonnance ordonnance = new Ordonnance(patient);
+        ordonnance.setCreateur(utilisateur);
         ordonnance.setDateDebut(dateDebut);
         ordonnance.setDateFin(dateFin);
         em.persist(ordonnance);
         return ordonnance;
     }
     
-    public Commentaire createCommentaire(Patient patient, String applicationToken, String texte)
+    public Commentaire createCommentaire(Utilisateur utilisateur, Patient patient, String applicationToken, String texte)
             throws ApplicationDoesNotExistException {
         Application app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
         Commentaire commentaire = new Commentaire(patient);
+        commentaire.setCreateur(utilisateur);
        commentaire.setTexte(texte);
         em.persist(commentaire);
         return commentaire;

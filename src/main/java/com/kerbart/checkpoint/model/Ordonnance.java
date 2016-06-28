@@ -45,6 +45,9 @@ public class Ordonnance {
 
 	@Column
 	String token;
+	
+	@Column
+	Utilisateur createur;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "ordonnance", fetch = FetchType.EAGER)
 	List<SecuredFile> files;
@@ -123,4 +126,14 @@ public class Ordonnance {
 	public void setCommentaire(String commentaire) {
 		this.commentaire = commentaire;
 	}
+
+	public Utilisateur getCreateur() {
+		return createur;
+	}
+
+	public void setCreateur(Utilisateur createur) {
+		this.createur = createur;
+	}
+	
+	
 }

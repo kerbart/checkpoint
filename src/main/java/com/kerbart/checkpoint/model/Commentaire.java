@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Commentaire {
 
@@ -23,6 +25,10 @@ public class Commentaire {
 	@Column
 	Date dateCreation;
 
+	@Column
+	Utilisateur createur;
+	
+	@JsonIgnore
 	@ManyToOne
 	Patient patient;
 
@@ -67,4 +73,14 @@ public class Commentaire {
 	public void setPatient(Patient patient) {
 		this.patient = patient;
 	}
+
+	public Utilisateur getCreateur() {
+		return createur;
+	}
+
+	public void setCreateur(Utilisateur createur) {
+		this.createur = createur;
+	}
+	
+	
 }
