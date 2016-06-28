@@ -25,7 +25,7 @@ public class Commentaire {
 	@Column
 	Date dateCreation;
 
-	@Column
+	@ManyToOne
 	Utilisateur createur;
 	
 	@JsonIgnore
