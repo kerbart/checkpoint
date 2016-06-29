@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 
+import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.model.Application;
 import com.kerbart.checkpoint.model.Utilisateur;
@@ -43,6 +44,16 @@ public class ApplicationService {
         return app;
     }
 
+    
+    public void associateApplicationToUser(String shortCode, Utilisateur user) throws UserAlreadyAssociatedException, ApplicationDoesNotExistException {
+    	Application app = applicationRepository.findByShortCode(shortCode);
+    	if (app == null) {
+    		throw new ApplicationDoesNotExistException();
+    	}
+    	this.associateApplicationToUser(app, user);
+    }
+    
+    
     /**
      * Link an application to a user
      * 

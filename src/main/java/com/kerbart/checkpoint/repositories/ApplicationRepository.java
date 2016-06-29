@@ -8,4 +8,5 @@ public interface ApplicationRepository extends CrudRepository<Application, Long>
 
     Application findByToken(String token);
 
+    Application findByShortCode(String shortCode);
 }

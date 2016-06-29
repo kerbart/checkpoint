@@ -44,6 +44,9 @@ public class PatientService {
     CommentaireRepository commentaireRepository;
     
     @Inject
+    NotificationService notificationService;
+    
+    @Inject
     FileService fileService;
 
     public Patient createPatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
@@ -67,6 +70,7 @@ public class PatientService {
         ordonnance.setDateDebut(dateDebut);
         ordonnance.setDateFin(dateFin);
         em.persist(ordonnance);
+        notificationService.notifyNewOrdonnanceCabinetUsers(app, utilisateur, ordonnance);
         return ordonnance;
     }
     
@@ -80,6 +84,7 @@ public class PatientService {
         commentaire.setCreateur(utilisateur);
        commentaire.setTexte(texte);
         em.persist(commentaire);
+        notificationService.notifyNewCommentCabinetUsers(app, utilisateur, commentaire);
         return commentaire;
     }
 

@@ -21,6 +21,9 @@ public class Application {
 
     @Column
     String name;
+    
+    @Column
+    String shortCode;
 
     @Column
     String token;
@@ -33,6 +36,7 @@ public class Application {
         super();
         this.token = TokenHelper.generateToken();
         this.secret = RandomStringUtils.randomAlphanumeric(16);
+        this.shortCode = RandomStringUtils.randomAlphanumeric(16);
     }
 
     public Long getId() {
@@ -66,4 +70,14 @@ public class Application {
     public void setSecret(String secret) {
         this.secret = secret;
     }
+
+	public String getShortCode() {
+		return shortCode;
+	}
+
+	public void setShortCode(String shortCode) {
+		this.shortCode = shortCode;
+	}
+    
+    
 }
