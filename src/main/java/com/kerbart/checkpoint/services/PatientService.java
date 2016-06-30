@@ -31,142 +31,120 @@ import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
 @Transactional
 public class PatientService {
 
-    @PersistenceContext
-    private EntityManager em;
+	@PersistenceContext
+	private EntityManager em;
 
-    @Inject
-    CabinetRepository cabinetRepository;
+	@Inject
+	CabinetRepository cabinetRepository;
 
-    @Inject
-    OrdonnanceRepository ordonnanceRepository;
+	@Inject
+	OrdonnanceRepository ordonnanceRepository;
 
-    @Inject
-    CommentaireRepository commentaireRepository;
-    
-    @Inject
-    NotificationService notificationService;
-    
-    @Inject
-    FileService fileService;
+	@Inject
+	CommentaireRepository commentaireRepository;
 
-    public Patient createPatient(Patient patient, String cabinetToken) throws CabinetDoesNotExistException {
-        Cabinet cabinet = cabinetRepository.findByToken(cabinetToken);
-        if (cabinet == null) {
-            throw new CabinetDoesNotExistException();
-        }
-        patient.setCabinet(cabinet);
-        em.persist(patient);
-        return patient;
-    }
+	@Inject
+	NotificationService notificationService;
 
-    public Ordonnance createOrdonance(Utilisateur utilisateur, Patient patient, String cabinetToken, Date dateDebut, Date dateFin, String commentaire)
-            throws CabinetDoesNotExistException {
-        Cabinet app = cabinetRepository.findByToken(cabinetToken);
-        if (app == null) {
-            throw new CabinetDoesNotExistException();
-        }
-        Ordonnance ordonnance = new Ordonnance(patient);
-        ordonnance.setCreateur(utilisateur);
-        ordonnance.setDateDebut(dateDebut);
-        ordonnance.setDateFin(dateFin);
-        em.persist(ordonnance);
-        notificationService.notifyNewOrdonnanceCabinetUsers(app, utilisateur, ordonnance);
-        return ordonnance;
-    }
-    
-    public Commentaire createCommentaire(Utilisateur utilisateur, Patient patient, String cabinetToken, String texte)
-            throws CabinetDoesNotExistException {
-        Cabinet app = cabinetRepository.findByToken(cabinetToken);
-        if (app == null) {
-            throw new CabinetDoesNotExistException();
-        }
-        Commentaire commentaire = new Commentaire(patient);
-        commentaire.setCreateur(utilisateur);
-       commentaire.setTexte(texte);
-        em.persist(commentaire);
-        notificationService.notifyNewCommentCabinetUsers(app, utilisateur, commentaire);
-        return commentaire;
-    }
+	@Inject
+	FileService fileService;
 
-    public SecuredFile addFileOrdonance(String applicationToken, String ordonnanceToken, String contentType,
-            byte[] bytes) throws CabinetDoesNotExistException {
-        Cabinet app = cabinetRepository.findByToken(applicationToken);
-        if (app == null) {
-            throw new CabinetDoesNotExistException();
-        }
-        Ordonnance ordonnance = ordonnanceRepository.findByToken(ordonnanceToken);
-        SecuredFile securedFile = new SecuredFile();
-        securedFile.setOrdonnance(ordonnance);
-        securedFile.setDateCreation(new Date());
-        securedFile.setContentType(contentType);
-        String path = fileService.storeFile(app.getToken(), fileService.convertToFile(bytes));
-        securedFile.setPath(path);
-        em.persist(securedFile);
+	public Patient createPatient(Patient patient, String cabinetToken) {
+		Cabinet cabinet = cabinetRepository.findByToken(cabinetToken);
+		patient.setCabinet(cabinet);
+		em.persist(patient);
+		return patient;
+	}
 
-        return securedFile;
-    }
+	public Ordonnance createOrdonance(Utilisateur utilisateur, Patient patient, String cabinetToken, Date dateDebut,
+			Date dateFin, String commentaire) throws CabinetDoesNotExistException {
+		Cabinet app = cabinetRepository.findByToken(cabinetToken);
+		if (app == null) {
+			throw new CabinetDoesNotExistException();
+		}
+		Ordonnance ordonnance = new Ordonnance(patient);
+		ordonnance.setCreateur(utilisateur);
+		ordonnance.setDateDebut(dateDebut);
+		ordonnance.setDateFin(dateFin);
+		em.persist(ordonnance);
+		notificationService.notifyNewOrdonnanceCabinetUsers(app, utilisateur, ordonnance);
+		return ordonnance;
+	}
 
-    public byte[] getFileOrdonnance(String cabinetToken, String fileToken)
-            throws CabinetDoesNotExistException {
-        Cabinet app = cabinetRepository.findByToken(cabinetToken);
-        if (app == null) {
-            throw new CabinetDoesNotExistException();
-        }
-        Query query = em.createQuery("select s from SecuredFile s " + " where s.token = :fileToken ")
-                .setParameter("fileToken", fileToken);
+	public Commentaire createCommentaire(Utilisateur utilisateur, Patient patient, String cabinetToken, String texte) {
 
-        SecuredFile sec = (SecuredFile) query.getSingleResult();
-        File decryptedFile = fileService.decryptFile(cabinetToken, new File(sec.getPath()));
-        try {
-            byte[] content = Files.readAllBytes(Paths.get(decryptedFile.getAbsolutePath()));
-            return content;
-        } catch (IOException e) {
-            return null;
-        }
-    }
-    
-    public List<Ordonnance> getOrdonnances(String cabinetToken, String patientToken) throws CabinetDoesNotExistException {
-    	 Cabinet app = cabinetRepository.findByToken(cabinetToken);
-         if (app == null) {
-             throw new CabinetDoesNotExistException();
-         }
-    	return ordonnanceRepository.findByPatientToken(patientToken);
-    }
-    
-    
-    public List<Commentaire> getCommentaires(String cabinetToken, String patientToken) throws CabinetDoesNotExistException {
-    	Cabinet app = cabinetRepository.findByToken(cabinetToken);
-        if (app == null) {
-            throw new CabinetDoesNotExistException();
-        }
-    	return commentaireRepository.findByPatientToken(patientToken);
-    }
-    
+		Commentaire commentaire = new Commentaire(patient);
+		commentaire.setCreateur(utilisateur);
+		commentaire.setTexte(texte);
+		em.persist(commentaire);
+		Cabinet app = cabinetRepository.findByToken(cabinetToken);
+		notificationService.notifyNewCommentCabinetUsers(app, utilisateur, commentaire);
+		return commentaire;
+	}
 
-    public Patient updatePatient(Patient patient, String applicationToken) throws CabinetDoesNotExistException {
-        Cabinet app = cabinetRepository.findByToken(applicationToken);
-        if (app == null) {
-            throw new CabinetDoesNotExistException();
-        }
-        patient.setCabinet(app);
-        return em.merge(patient);
-    }
+	public SecuredFile addFileOrdonance(String applicationToken, String ordonnanceToken, String contentType,
+			byte[] bytes) {
+		Cabinet app = cabinetRepository.findByToken(applicationToken);
+		Ordonnance ordonnance = ordonnanceRepository.findByToken(ordonnanceToken);
+		SecuredFile securedFile = new SecuredFile();
+		securedFile.setOrdonnance(ordonnance);
+		securedFile.setDateCreation(new Date());
+		securedFile.setContentType(contentType);
+		String path = fileService.storeFile(app.getToken(), fileService.convertToFile(bytes));
+		securedFile.setPath(path);
+		em.persist(securedFile);
 
-    public PatientDansTournee findPatientDansTourneeOccurence(String patientToken, String tourneeOccurenceToken) {
-        Query query = em
-                .createQuery("select pdt from PatientDansTournee pdt "
-                        + " where pdt.tourneeOccurence.token = :tourneeOccurenceToken "
-                        + " and pdt.patient.token = :patientToken")
-                .setParameter("tourneeOccurenceToken", tourneeOccurenceToken)
-                .setParameter("patientToken", patientToken);
-        return (PatientDansTournee) query.getSingleResult();
-    }
+		return securedFile;
+	}
 
-    public void removePatientDansTourneeOccurence(String patientToken, String tourneeOccurenceToken) {
-        PatientDansTournee pdt = this.findPatientDansTourneeOccurence(patientToken, tourneeOccurenceToken);
-        if (pdt != null) {
-            em.remove(pdt);
-        }
-    }
+	/**
+	 * Récupère un fichier crypté
+	 * @param fileToken
+	 * @return
+	 */
+	public byte[] getFileOrdonnance(String fileToken, String cabinetToken)  {
+		
+		Query query = em.createQuery("select s from SecuredFile s " + " where s.token = :fileToken ")
+				.setParameter("fileToken", fileToken);
+		SecuredFile sec = (SecuredFile) query.getSingleResult();
+		File decryptedFile = fileService.decryptFile(cabinetToken, new File(sec.getPath()));
+		try {
+			byte[] content = Files.readAllBytes(Paths.get(decryptedFile.getAbsolutePath()));
+			return content;
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	public List<Ordonnance> getOrdonnances(String patientToken) {
+		return ordonnanceRepository.findByPatientToken(patientToken);
+	}
+
+	public List<Commentaire> getCommentaires(String patientToken) {
+		return commentaireRepository.findByPatientToken(patientToken);
+	}
+
+	public Patient updatePatient(Patient patient, String applicationToken) {
+		Cabinet app = cabinetRepository.findByToken(applicationToken);
+		patient.setCabinet(app);
+		return em.merge(patient);
+	}
+
+	public PatientDansTournee findPatientDansTourneeOccurence(String patientToken, String tourneeOccurenceToken) {
+		Query query = em
+				.createQuery("select pdt from PatientDansTournee pdt "
+						+ " where pdt.tourneeOccurence.token = :tourneeOccurenceToken "
+						+ " and pdt.patient.token = :patientToken")
+				.setParameter("tourneeOccurenceToken", tourneeOccurenceToken)
+				.setParameter("patientToken", patientToken);
+		return (PatientDansTournee) query.getSingleResult();
+	}
+
+	public void removePatientDansTourneeOccurence(String patientToken, String tourneeOccurenceToken) {
+		PatientDansTournee pdt = this.findPatientDansTourneeOccurence(patientToken, tourneeOccurenceToken);
+		if (pdt != null) {
+			em.remove(pdt);
+		}
+	}
 
 }
