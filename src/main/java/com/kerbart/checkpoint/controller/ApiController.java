@@ -145,7 +145,7 @@ public class ApiController {
 	}
 	
 	@ApiOperation(value = "Liste les notifications pour un utilisateur donné")
-	@RequestMapping(value = "/user/notifications", produces = "application/json", method = RequestMethod.GET)
+	@RequestMapping(value = "/user/notifications", produces = "application/json", method = RequestMethod.POST)
 	@CrossOrigin(origins = "*")
 	public ResponseEntity<NotificationResponse> listNotifications(@RequestBody CommonDTO commonDto) {
 		NotificationResponse response = new NotificationResponse();
