@@ -1,10 +1,8 @@
 package com.kerbart.checkpoint.controller.dto;
 
-public class CommentaireDTO {
+public class CommentaireDTO extends CommonDTO {
 
     String commentaire;
-    String cabinetToken;
-    String utilisateurToken;
     String patientToken;
 
     public String getCommentaire() {
@@ -15,23 +13,6 @@ public class CommentaireDTO {
 		this.commentaire = commentaire;
 	}
 
-	
-
-    public String getCabinetToken() {
-		return cabinetToken;
-	}
-
-	public void setCabinetToken(String cabinetToken) {
-		this.cabinetToken = cabinetToken;
-	}
-
-	public String getUtilisateurToken() {
-        return utilisateurToken;
-    }
-
-    public void setUtilisateurToken(String utilisateurToken) {
-        this.utilisateurToken = utilisateurToken;
-    }
 
     public String getPatientToken() {
         return patientToken;

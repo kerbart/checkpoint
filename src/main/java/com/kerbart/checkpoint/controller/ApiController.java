@@ -380,11 +380,10 @@ public class ApiController {
 	@RequestMapping(value = "/patient/ordonnances", method = RequestMethod.POST, produces = "application/json")
 	@CrossOrigin(origins = "*")
 	public ResponseEntity<OrdonnancesResponse> listOrdonnances(
-			@RequestParam("applicationToken") String applicationToken,
-			@RequestParam("patientToken") String patientToken) {
+			@RequestBody OrdonnanceDTO ordonnanceDTO) {
 		OrdonnancesResponse response = new OrdonnancesResponse();
 		try {
-			List<Ordonnance> ordonnances = patientService.getOrdonnances(applicationToken, patientToken);
+			List<Ordonnance> ordonnances = patientService.getOrdonnances(ordonnanceDTO.getCabinetToken(), ordonnanceDTO.getPatientToken());
 			response.setOrdonnances(ordonnances);
 		} catch (CabinetDoesNotExistException e) {
 			response.setError(ErrorCode.CABINET_UNKNOWN);
@@ -442,12 +441,10 @@ public class ApiController {
 	@ApiOperation(value = "Liste les commentaires d'un patient")
 	@RequestMapping(value = "/patient/commentaires", method = RequestMethod.POST, produces = "application/json")
 	@CrossOrigin(origins = "*")
-	public ResponseEntity<CommentairesResponse> listCommentaires(
-			@RequestParam("applicationToken") String applicationToken,
-			@RequestParam("patientToken") String patientToken) {
+	public ResponseEntity<CommentairesResponse> listCommentaires(@RequestBody CommentaireDTO commentaireDto) {
 		CommentairesResponse response = new CommentairesResponse();
 		try {
-			List<Commentaire> commentaires = patientService.getCommentaires(applicationToken, patientToken);
+			List<Commentaire> commentaires = patientService.getCommentaires(commentaireDto.getCabinetToken(), commentaireDto.getPatientToken());
 			response.setCommentaires(commentaires);
 		} catch (CabinetDoesNotExistException e) {
 			response.setError(ErrorCode.CABINET_UNKNOWN);

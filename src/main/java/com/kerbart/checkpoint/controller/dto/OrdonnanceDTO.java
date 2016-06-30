@@ -2,11 +2,9 @@ package com.kerbart.checkpoint.controller.dto;
 
 import com.kerbart.checkpoint.model.Ordonnance;
 
-public class OrdonnanceDTO {
+public class OrdonnanceDTO extends CommonDTO {
 
     Ordonnance ordonnance;
-    String cabinetToken;
-    String utilisateurToken;
     String patientToken;
 
     public Ordonnance getOrdonnance() {
@@ -17,21 +15,6 @@ public class OrdonnanceDTO {
         this.ordonnance = ordonnance;
     }
 
-    public String getCabinetToken() {
-		return cabinetToken;
-	}
-
-	public void setCabinetToken(String cabinetToken) {
-		this.cabinetToken = cabinetToken;
-	}
-
-	public String getUtilisateurToken() {
-        return utilisateurToken;
-    }
-
-    public void setUtilisateurToken(String utilisateurToken) {
-        this.utilisateurToken = utilisateurToken;
-    }
 
     public String getPatientToken() {
         return patientToken;
