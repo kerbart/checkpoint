@@ -26,7 +26,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
-import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.Tournee;
@@ -46,253 +46,248 @@ import com.kerbart.checkpoint.spring.AppConfiguration;
 @WebAppConfiguration
 public class EndToEndTests {
 
-    @Inject
-    UtilisateurService utilisateurService;
+	@Inject
+	UtilisateurService utilisateurService;
 
-    @Inject
-    ApplicationService applicationService;
+	@Inject
+	ApplicationService applicationService;
 
-    @Inject
-    TourneeService tourneeService;
+	@Inject
+	TourneeService tourneeService;
 
-    @Inject
-    PatientService patientService;
+	@Inject
+	PatientService patientService;
 
-    @Inject
-    PatientRepository patientRepository;
+	@Inject
+	PatientRepository patientRepository;
 
-    @Inject
-    OrdonnanceRepository ordonnanceRepository;
+	@Inject
+	OrdonnanceRepository ordonnanceRepository;
 
-    private void wipeAll() {
+	@Test
+	@DirtiesContext
+	public void souldInsertTwoUsers() throws UserAlreadyExistsException {
 
-        // tourneeService.wipeAll();
-        // applicationService.wipeAll();
-        // utilisateurService.removeAllUsers();
-    }
+		utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
 
-    @Test
-    @DirtiesContext
-    public void souldInsertTwoUsers() throws UserAlreadyExistsException {
-        this.wipeAll();
+		assertEquals(1, utilisateurService.listUsers().size());
 
-        utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+		utilisateurService.create("damien2@kerbart.com", "toto1234", "Damien", "Kerbart");
 
-        assertEquals(1, utilisateurService.listUsers().size());
+		assertEquals(2, utilisateurService.listUsers().size());
+	}
 
-        utilisateurService.create("damien2@kerbart.com", "toto1234", "Damien", "Kerbart");
+	@Test(expected = UserAlreadyExistsException.class)
+	@DirtiesContext
+	public void shouldNotInsertTwoEmails() throws UserAlreadyExistsException {
 
-        assertEquals(2, utilisateurService.listUsers().size());
-    }
+		Utilisateur u1 = new Utilisateur();
+		u1.setNom("KERBART");
+		u1.setPrenom("Damien");
+		u1.setEmail("damien22@kerbart.com");
+		u1.setPassword("123456789");
 
-    @Test(expected = UserAlreadyExistsException.class)
-    @DirtiesContext
-    public void shouldNotInsertTwoEmails() throws UserAlreadyExistsException {
-        this.wipeAll();
+		utilisateurService.create(u1);
 
-        Utilisateur u1 = new Utilisateur();
-        u1.setNom("KERBART");
-        u1.setPrenom("Damien");
-        u1.setEmail("damien22@kerbart.com");
-        u1.setPassword("123456789");
+		Utilisateur u2 = new Utilisateur();
+		u2.setNom("KERBART");
+		u2.setPrenom("Damien");
+		u2.setEmail("damien22@kerbart.com");
+		u2.setPassword("123456789");
 
-        utilisateurService.create(u1);
+		utilisateurService.create(u2);
 
-        Utilisateur u2 = new Utilisateur();
-        u2.setNom("KERBART");
-        u2.setPrenom("Damien");
-        u2.setEmail("damien22@kerbart.com");
-        u2.setPassword("123456789");
+	}
 
-        utilisateurService.create(u2);
+	@Test
+	@DirtiesContext
+	public void userShouldBeLinkedToAnApplication() throws UserAlreadyAssociatedException, UserAlreadyExistsException {
 
-    }
+		Utilisateur u1 = new Utilisateur();
+		u1.setNom("KERBART");
+		u1.setPrenom("Damien");
+		u1.setEmail("damien22@kerbart.com");
+		u1.setPassword("123456789");
 
-    @Test
-    @DirtiesContext
-    public void userShouldBeLinkedToAnApplication() throws UserAlreadyAssociatedException, UserAlreadyExistsException {
-        this.wipeAll();
+		u1 = utilisateurService.create(u1);
+		assertNotEquals(null, u1.getToken());
 
-        Utilisateur u1 = new Utilisateur();
-        u1.setNom("KERBART");
-        u1.setPrenom("Damien");
-        u1.setEmail("damien22@kerbart.com");
-        u1.setPassword("123456789");
+		Utilisateur u2 = new Utilisateur();
+		u2.setNom("KERBART");
+		u2.setPrenom("Damien");
+		u2.setEmail("damien20@kerbart.com");
+		u2.setPassword("123456789");
 
-        u1 = utilisateurService.create(u1);
-        assertNotEquals(null, u1.getToken());
+		u2 = utilisateurService.create(u2);
+		assertNotEquals(null, u2.getToken());
 
-        Utilisateur u2 = new Utilisateur();
-        u2.setNom("KERBART");
-        u2.setPrenom("Damien");
-        u2.setEmail("damien20@kerbart.com");
-        u2.setPassword("123456789");
+		Cabinet application = applicationService.createApp("An Application");
+		applicationService.associateApplicationToUser(application, u1);
+		List<Utilisateur> users = applicationService.getUtilisateursByApplication(application.getToken());
+		assertEquals(1, users.size());
 
-        u2 = utilisateurService.create(u2);
-        assertNotEquals(null, u2.getToken());
+		applicationService.associateApplicationToUser(application, u2);
+		users = applicationService.getUtilisateursByApplication(application.getToken());
+		assertEquals(2, users.size());
 
-        Application application = applicationService.createApp("An Application");
-        applicationService.associateApplicationToUser(application, u1);
-        List<Utilisateur> users = applicationService.getUtilisateursByApplication(application.getToken());
-        assertEquals(1, users.size());
+	}
 
-        applicationService.associateApplicationToUser(application, u2);
-        users = applicationService.getUtilisateursByApplication(application.getToken());
-        assertEquals(2, users.size());
+	@Test(expected = UserAlreadyAssociatedException.class)
+	@DirtiesContext
+	public void cannotAdd2timesSameUserToApplicationUtilisateur() throws Throwable {
 
-    }
+		Utilisateur u1 = new Utilisateur();
+		u1.setNom("KERBART");
+		u1.setPrenom("Damien");
+		u1.setEmail("damien22@kerbart.com");
+		u1.setPassword("123456789");
 
-    @Test(expected = UserAlreadyAssociatedException.class)
-    @DirtiesContext
-    public void cannotAdd2timesSameUserToApplicationUtilisateur() throws Throwable {
-        this.wipeAll();
+		utilisateurService.create(u1);
+		Cabinet application = applicationService.createApp("An Application");
+		applicationService.associateApplicationToUser(application, u1);
+		applicationService.associateApplicationToUser(application, u1);
+	}
 
-        Utilisateur u1 = new Utilisateur();
-        u1.setNom("KERBART");
-        u1.setPrenom("Damien");
-        u1.setEmail("damien22@kerbart.com");
-        u1.setPassword("123456789");
+	@Test
+	@DirtiesContext
+	public void shouldAuthUser() throws Throwable {
 
-        utilisateurService.create(u1);
-        Application application = applicationService.createApp("An Application");
-        applicationService.associateApplicationToUser(application, u1);
-        applicationService.associateApplicationToUser(application, u1);
-    }
+		utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+		assertEquals(true, utilisateurService.auth("damien@kerbart.com", "toto1234"));
+		assertEquals(false, utilisateurService.auth("damien@kerbart.com", "anOtherPassword"));
+	}
 
-    @Test
-    @DirtiesContext
-    public void shouldAuthUser() throws Throwable {
-        this.wipeAll();
-        utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-        assertEquals(true, utilisateurService.auth("damien@kerbart.com", "toto1234"));
-        assertEquals(false, utilisateurService.auth("damien@kerbart.com", "anOtherPassword"));
-    }
+	@Test
+	@DirtiesContext
+	public void shouldCreateUserAppAndTournee() throws UserAlreadyAssociatedException, UserAlreadyExistsException {
 
-    @Test
-    @DirtiesContext
-    public void shouldCreateUserAppAndTournee() throws UserAlreadyAssociatedException, UserAlreadyExistsException {
-        this.wipeAll();
-        Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-        Application app = applicationService.createApp("My App");
-        applicationService.associateApplicationToUser(app, u);
-        Tournee tournee = tourneeService.createTournee(app, "Tournée 1");
-        TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-        assertNotEquals(null, tourneeOccurence.getTournee());
-        assertEquals("My App", tourneeOccurence.getTournee().getApplication().getName());
-    }
+		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+		Cabinet app = applicationService.createApp("My App");
+		applicationService.associateApplicationToUser(app, u);
+		Tournee tournee = tourneeService.createTournee(app, "Tournée 1");
+		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
+		assertNotEquals(null, tourneeOccurence.getTournee());
+		assertEquals("My App", tourneeOccurence.getTournee().getApplication().getName());
+	}
 
-    @Test
-    @DirtiesContext
-    public void shouldCheckIfApplicationBelongsToUtilisateur()
-            throws UserAlreadyAssociatedException, UserAlreadyExistsException {
-        this.wipeAll();
-        Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-        Application app = applicationService.createApp("My App");
-        Application app2 = applicationService.createApp("My App 2");
-        applicationService.associateApplicationToUser(app, u);
-        assertEquals(true, applicationService.checkApplicationBelongsUtilisateur(app, u));
-        assertEquals(false, applicationService.checkApplicationBelongsUtilisateur(app2, u));
-    }
+	@Test
+	@DirtiesContext
+	public void shouldCheckIfApplicationBelongsToUtilisateur()
+			throws UserAlreadyAssociatedException, UserAlreadyExistsException {
 
-    @Test
-    @DirtiesContext
-    public void shouldCreateUserApplicationTourneeOrrurenceAndPatients()
-            throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
-        Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-        Application app = applicationService.createApp("My App");
-        applicationService.associateApplicationToUser(app, u);
-        Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
-        TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-        Patient p1 = patientService.createPatient(createRandomPatient(), app.getToken());
-        Patient p2 = patientService.createPatient(createRandomPatient(), app.getToken());
-        Patient p3 = patientService.createPatient(createRandomPatient(), app.getToken());
-        tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p1, 1);
-        tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p2, 2);
-        tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p3, 3);
+		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+		Cabinet app = applicationService.createApp("My App");
+		Cabinet app2 = applicationService.createApp("My App 2");
+		applicationService.associateApplicationToUser(app, u);
+		assertEquals(true, applicationService.checkApplicationBelongsUtilisateur(app, u));
+		assertEquals(false, applicationService.checkApplicationBelongsUtilisateur(app2, u));
+	}
 
-        TourneeOccurence tourneeOccurence2 = tourneeService.duplicateTourneeOccurence(
-                tourneeService.findTourneeOccurenceByToken(tourneeOccurence.getToken()), new Date());
+	@Test
+	@DirtiesContext
+	public void shouldCreateUserApplicationTourneeOrrurenceAndPatients()
+			throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+		Cabinet app = applicationService.createApp("My App");
+		Cabinet appSecond = applicationService.createApp("My App 2");
+		applicationService.associateApplicationToUser(app, u);
+		applicationService.associateApplicationToUser(appSecond, u);
+		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
+		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
+		Patient p1 = patientService.createPatient(createRandomPatient(), app.getToken());
+		Patient p2 = patientService.createPatient(createRandomPatient(), app.getToken());
+		Patient p3 = patientService.createPatient(createRandomPatient(), app.getToken());
+		tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p1, 1);
+		tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p2, 2);
+		tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p3, 3);
 
-        System.out.println("Utilisateur " + u.getNom() + " / " + u.getToken());
-        for (Application app2 : applicationService.getApplicationByUtilisateur(u.getToken())) {
-            System.out.println("+-> found app = " + app.getName() + " / " + app.getToken());
-            for (Tournee t : tourneeService.listTourneeByApplication(app2.getToken())) {
-                System.out.println("  +-> found tournee " + t.getName() + " / " + t.getToken());
-                for (TourneeOccurence to : tourneeService.listTourneeOccurenceByTournee(t.getToken())) {
-                    System.out.println("      +-> found tournee occurence " + to.getPatients().size() + " patients ");
-                }
-            }
-        }
+		TourneeOccurence tourneeOccurence2 = tourneeService.duplicateTourneeOccurence(
+				tourneeService.findTourneeOccurenceByToken(tourneeOccurence.getToken()), new Date());
 
-        patientService.removePatientDansTourneeOccurence(p3.getToken(), tourneeOccurence2.getToken());
+		System.out.println("Utilisateur " + u.getNom() + " / " + u.getToken());
+		for (Cabinet app2 : applicationService.getApplicationByUtilisateur(u.getToken())) {
+			System.out.println("+-> found app = " + app.getName() + " / " + app.getToken());
+			for (Tournee t : tourneeService.listTourneeByApplication(app2.getToken())) {
+				System.out.println("  +-> found tournee " + t.getName() + " / " + t.getToken());
+				for (TourneeOccurence to : tourneeService.listTourneeOccurenceByTournee(t.getToken())) {
+					System.out.println("      +-> found tournee occurence " + to.getPatients().size() + " patients ");
+				}
+			}
+		}
 
-        System.out.println("Utilisateur " + u.getNom() + " / " + u.getToken());
-        for (Application app2 : applicationService.getApplicationByUtilisateur(u.getToken())) {
-            System.out.println("+-> found app = " + app.getName() + " / " + app.getToken());
-            for (Tournee t : tourneeService.listTourneeByApplication(app2.getToken())) {
-                System.out.println("  +-> found tournee " + t.getName() + " / " + t.getToken());
-                for (TourneeOccurence to : tourneeService.listTourneeOccurenceByTournee(t.getToken())) {
-                    System.out.println("      +-> found tournee occurence " + to.getPatients().size() + " patients ");
-                }
-            }
-        }
-    }
+		patientService.removePatientDansTourneeOccurence(p3.getToken(), tourneeOccurence2.getToken());
 
-    @Test
-    @DirtiesContext
-    public void shouldCreateUserApplicationPatientAndUpdateIt()
-            throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
-        Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-        Application app = applicationService.createApp("My App");
-        applicationService.associateApplicationToUser(app, u);
-        Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
-        TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-        Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
+		System.out.println("Utilisateur " + u.getNom() + " / " + u.getToken());
+		for (Cabinet app2 : applicationService.getApplicationByUtilisateur(u.getToken())) {
+			System.out.println("+-> found app = " + app.getName() + " / " + app.getToken());
+			for (Tournee t : tourneeService.listTourneeByApplication(app2.getToken())) {
+				System.out.println("  +-> found tournee " + t.getName() + " / " + t.getToken());
+				for (TourneeOccurence to : tourneeService.listTourneeOccurenceByTournee(t.getToken())) {
+					System.out.println("      +-> found tournee occurence " + to.getPatients().size() + " patients ");
+				}
+			}
+		}
 
-        patient.setNom("BIDULE");
-        patientService.updatePatient(patient, app.getToken());
+		Cabinet currentApp = applicationService.getCurrentApp(u);
+		
+		assertEquals(currentApp.getName(), "My App 2");
+	}
 
-        Patient retrievedPatient = patientRepository.findByToken(patient.getToken());
+	@Test
+	@DirtiesContext
+	public void shouldCreateUserApplicationPatientAndUpdateIt()
+			throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+		Cabinet app = applicationService.createApp("My App");
+		applicationService.associateApplicationToUser(app, u);
+		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
+		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
+		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
 
-        assertEquals("BIDULE", retrievedPatient.getNom());
+		patient.setNom("BIDULE");
+		patientService.updatePatient(patient, app.getToken());
 
-    }
+		Patient retrievedPatient = patientRepository.findByToken(patient.getToken());
 
-    @Test
-    @DirtiesContext
-    public void shouldCreateUserApplicationPatientAndOrdonance()
-            throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
-        Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-        Application app = applicationService.createApp("My App");
-        applicationService.associateApplicationToUser(app, u);
-        Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
-        TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-        Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
-        Ordonnance ordonnance = patientService.createOrdonance(u,patient, app.getToken(), new Date(), new Date(), "");
-        patientService.addFileOrdonance(app.getToken(), ordonnance.getToken(), "image/png", "Du contenu".getBytes());
-        ordonnance = ordonnanceRepository.findByToken(ordonnance.getToken());
-        assertEquals(1, ordonnance.getFiles().size());
+		assertEquals("BIDULE", retrievedPatient.getNom());
 
-    }
+	}
 
-    public byte[] extractBytes(String ImageName) throws IOException {
-        // open image
-        File imgPath = new File(ImageName);
-        BufferedImage bufferedImage = ImageIO.read(imgPath);
+	@Test
+	@DirtiesContext
+	public void shouldCreateUserApplicationPatientAndOrdonance()
+			throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
+		Cabinet app = applicationService.createApp("My App");
+		applicationService.associateApplicationToUser(app, u);
+		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
+		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
+		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
+		Ordonnance ordonnance = patientService.createOrdonance(u, patient, app.getToken(), new Date(), new Date(), "");
+		patientService.addFileOrdonance(app.getToken(), ordonnance.getToken(), "image/png", "Du contenu".getBytes());
+		ordonnance = ordonnanceRepository.findByToken(ordonnance.getToken());
+		assertEquals(1, ordonnance.getFiles().size());
 
-        // get DataBufferBytes from Raster
-        WritableRaster raster = bufferedImage.getRaster();
-        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+	}
 
-        return (data.getData());
-    }
+	public byte[] extractBytes(String ImageName) throws IOException {
+		// open image
+		File imgPath = new File(ImageName);
+		BufferedImage bufferedImage = ImageIO.read(imgPath);
 
-    private Patient createRandomPatient() {
-        Patient p = new Patient();
-        p.setNom(RandomStringUtils.randomAlphanumeric(18));
-        p.setPrenom(RandomStringUtils.randomAlphanumeric(18));
-        p.setNumeroSS("0123456789456123");
-        return p;
-    }
+		// get DataBufferBytes from Raster
+		WritableRaster raster = bufferedImage.getRaster();
+		DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+
+		return (data.getData());
+	}
+
+	private Patient createRandomPatient() {
+		Patient p = new Patient();
+		p.setNom(RandomStringUtils.randomAlphanumeric(18));
+		p.setPrenom(RandomStringUtils.randomAlphanumeric(18));
+		p.setNumeroSS("0123456789456123");
+		return p;
+	}
 
 }

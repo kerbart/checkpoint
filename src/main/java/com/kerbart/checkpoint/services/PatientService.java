@@ -16,7 +16,7 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
-import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
@@ -50,7 +50,7 @@ public class PatientService {
     FileService fileService;
 
     public Patient createPatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
-        Application app = applicationRepository.findByToken(applicationToken);
+        Cabinet app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
@@ -61,7 +61,7 @@ public class PatientService {
 
     public Ordonnance createOrdonance(Utilisateur utilisateur, Patient patient, String applicationToken, Date dateDebut, Date dateFin, String commentaire)
             throws ApplicationDoesNotExistException {
-        Application app = applicationRepository.findByToken(applicationToken);
+        Cabinet app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
@@ -76,7 +76,7 @@ public class PatientService {
     
     public Commentaire createCommentaire(Utilisateur utilisateur, Patient patient, String applicationToken, String texte)
             throws ApplicationDoesNotExistException {
-        Application app = applicationRepository.findByToken(applicationToken);
+        Cabinet app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
@@ -90,7 +90,7 @@ public class PatientService {
 
     public SecuredFile addFileOrdonance(String applicationToken, String ordonnanceToken, String contentType,
             byte[] bytes) throws ApplicationDoesNotExistException {
-        Application app = applicationRepository.findByToken(applicationToken);
+        Cabinet app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
@@ -108,7 +108,7 @@ public class PatientService {
 
     public byte[] getFileOrdonnance(String applicationToken, String fileToken)
             throws ApplicationDoesNotExistException {
-        Application app = applicationRepository.findByToken(applicationToken);
+        Cabinet app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
@@ -126,7 +126,7 @@ public class PatientService {
     }
     
     public List<Ordonnance> getOrdonnances(String applicationToken, String patientToken) throws ApplicationDoesNotExistException {
-    	 Application app = applicationRepository.findByToken(applicationToken);
+    	 Cabinet app = applicationRepository.findByToken(applicationToken);
          if (app == null) {
              throw new ApplicationDoesNotExistException();
          }
@@ -135,7 +135,7 @@ public class PatientService {
     
     
     public List<Commentaire> getCommentaires(String applicationToken, String patientToken) throws ApplicationDoesNotExistException {
-    	Application app = applicationRepository.findByToken(applicationToken);
+    	Cabinet app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }
@@ -144,7 +144,7 @@ public class PatientService {
     
 
     public Patient updatePatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
-        Application app = applicationRepository.findByToken(applicationToken);
+        Cabinet app = applicationRepository.findByToken(applicationToken);
         if (app == null) {
             throw new ApplicationDoesNotExistException();
         }

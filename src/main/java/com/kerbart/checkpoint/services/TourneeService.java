@@ -12,7 +12,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 
-import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.PatientDansTournee;
 import com.kerbart.checkpoint.model.Tournee;
@@ -33,7 +33,7 @@ public class TourneeService {
     @Inject
     TourneeOccurenceRepository tourneeOccurenceRepository;
 
-    public Tournee createTournee(Application application, String name) {
+    public Tournee createTournee(Cabinet application, String name) {
         Tournee tournee = new Tournee(application, name);
         tournee.setDateCreation(new Date());
         tournee.setName(name);

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.kerbart.checkpoint.exceptions.CryptoException;
 import com.kerbart.checkpoint.helper.CryptoUtils;
-import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.repositories.ApplicationRepository;
 
 @Service
@@ -26,7 +26,7 @@ public class FileService {
 
     public String storeFile(String applicationToken, File inputFile) {
         String filePath = storagePath + RandomStringUtils.randomAlphanumeric(32);
-        Application app = applicationRepository.findByToken(applicationToken);
+        Cabinet app = applicationRepository.findByToken(applicationToken);
         try {
             CryptoUtils.encrypt(app.getSecret(), inputFile, new File(filePath));
         } catch (CryptoException e) {
@@ -38,7 +38,7 @@ public class FileService {
     public File decryptFile(String applicationToken, File inputFile) {
         try {
             File temp = File.createTempFile("dec", "ord");
-            Application app = applicationRepository.findByToken(applicationToken);
+            Cabinet app = applicationRepository.findByToken(applicationToken);
             CryptoUtils.decrypt(app.getSecret(), inputFile, temp);
             return temp;
         } catch (IOException e) {

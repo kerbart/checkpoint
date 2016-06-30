@@ -11,7 +11,7 @@ import javax.persistence.Query;
 
 import org.springframework.stereotype.Service;
 
-import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.NotificationType;
 import com.kerbart.checkpoint.model.Ordonnance;
@@ -40,7 +40,7 @@ public class NotificationService {
     	 return (List<Notification>) query.getResultList();
     }
     
-	public void notifyNewOrdonnanceCabinetUsers(Application application, Utilisateur issuer, Ordonnance ordonnance) {
+	public void notifyNewOrdonnanceCabinetUsers(Cabinet application, Utilisateur issuer, Ordonnance ordonnance) {
 		for (Utilisateur u : findAllOtherUsers(application, issuer)) {
 			UtilisateurNotification notification = new UtilisateurNotification();
 			notification.setUtilisateur(u);
@@ -50,7 +50,7 @@ public class NotificationService {
 		}
 	}
 
-	public void notifyNewCommentCabinetUsers(Application application, Utilisateur issuer, Commentaire commentaire) {
+	public void notifyNewCommentCabinetUsers(Cabinet application, Utilisateur issuer, Commentaire commentaire) {
 		for (Utilisateur u : findAllOtherUsers(application, issuer)) {
 			UtilisateurNotification notification = new UtilisateurNotification();
 			notification.setUtilisateur(u);
@@ -60,7 +60,7 @@ public class NotificationService {
 		}
 	}
 
-	private List<Utilisateur> findAllOtherUsers(Application application, Utilisateur utilisateur) {
+	private List<Utilisateur> findAllOtherUsers(Cabinet application, Utilisateur utilisateur) {
 		List<Utilisateur> utilisateurs = utilisateurRepository.findByAppToken(application.getToken());
 		utilisateurs.remove(utilisateur);
 		return utilisateurs;

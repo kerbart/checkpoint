@@ -65,7 +65,7 @@ public class Patient {
     String commentaires;
 
     @ManyToOne(optional = false)
-    Application application;
+    Cabinet application;
 
     @Column
     String token;
@@ -75,7 +75,7 @@ public class Patient {
         this.token = TokenHelper.generateToken();
     }
 
-    public Patient(Application application) {
+    public Patient(Cabinet application) {
         this();
         this.application = application;
     }
@@ -184,11 +184,11 @@ public class Patient {
         this.token = token;
     }
 
-    public Application getApplication() {
+    public Cabinet getApplication() {
         return application;
     }
 
-    public void setApplication(Application application) {
+    public void setApplication(Cabinet application) {
         this.application = application;
     }
 

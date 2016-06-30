@@ -19,7 +19,7 @@ public class UtilisateurApplication {
 	Utilisateur utilisateur;
 
 	@ManyToOne	
-	Application application;
+	Cabinet application;
 
 	public Integer getId() {
 		return id;
@@ -37,11 +37,11 @@ public class UtilisateurApplication {
 		this.utilisateur = utilisateur;
 	}
 
-	public Application getApplication() {
+	public Cabinet getApplication() {
 		return application;
 	}
 
-	public void setApplication(Application application) {
+	public void setApplication(Cabinet application) {
 		this.application = application;
 	}
 

@@ -29,6 +29,8 @@ import com.kerbart.checkpoint.controller.dto.PatientDTO;
 import com.kerbart.checkpoint.controller.dto.PatientSearchDTO;
 import com.kerbart.checkpoint.controller.dto.UserLoginDTO;
 import com.kerbart.checkpoint.controller.responses.ApplicationJoinResponse;
+import com.kerbart.checkpoint.controller.responses.ApplicationResponse;
+import com.kerbart.checkpoint.controller.responses.ApplicationsResponse;
 import com.kerbart.checkpoint.controller.responses.CommentaireResponse;
 import com.kerbart.checkpoint.controller.responses.CommentairesResponse;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
@@ -41,7 +43,7 @@ import com.kerbart.checkpoint.controller.responses.UtilisateurResponse;
 import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
-import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
@@ -130,24 +132,67 @@ public class ApiController {
 	@ApiOperation(value = "App list")
 	@RequestMapping(value = "/user/{token}/app/list", produces = "application/json", method = RequestMethod.GET)
 	@CrossOrigin(origins = "*")
-	public ResponseEntity<List<Application>> listMyApplication(@PathVariable("token") String token) {
+	public ResponseEntity<ApplicationsResponse> listMyApplication(@PathVariable("token") String token) {
 		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
+		ApplicationsResponse response = new ApplicationsResponse();
 		if (utilisateur != null) {
-			List<Application> list = applicationService.getApplicationByUtilisateur(utilisateur.getToken());
-			return new ResponseEntity<List<Application>>(list, HttpStatus.OK);
+			List<Cabinet> list = applicationService.getApplicationByUtilisateur(utilisateur.getToken());
+			response.setApplications(list);
+			return new ResponseEntity<ApplicationsResponse>(response, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<List<Application>>(new ArrayList<Application>(), HttpStatus.OK);
+			response.setError(ErrorCode.USER_UNKONWN);
+			return new ResponseEntity<ApplicationsResponse>(response, HttpStatus.OK);
+		}
+	}
+
+	@ApiOperation(value = "Current App")
+	@RequestMapping(value = "/user/{token}/app/current", produces = "application/json", method = RequestMethod.GET)
+	@CrossOrigin(origins = "*")
+	public ResponseEntity<ApplicationResponse> getCurrentApplication(@PathVariable("token") String token) {
+		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
+		ApplicationResponse response = new ApplicationResponse();
+		if (utilisateur != null) {
+			Cabinet theCurrentApp = applicationService.getCurrentApp(utilisateur);
+			response.setApplication(theCurrentApp);
+			return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+		} else {
+			response.setError(ErrorCode.USER_UNKONWN);
+			return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+		}
+	}
+
+	@ApiOperation(value = "Current App")
+	@RequestMapping(value = "/user/{token}/app/change/{appToken}", produces = "application/json", method = RequestMethod.GET)
+	@CrossOrigin(origins = "*")
+	public ResponseEntity<ApplicationResponse> changeCurrentApplication(@PathVariable("token") String token,
+			@PathVariable("appToken") String appToken) {
+		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
+		ApplicationResponse response = new ApplicationResponse();
+
+		try {
+			if (utilisateur != null) {
+				Cabinet theCurrentApp = applicationService.changeCurrentApp(utilisateur, appToken);
+				response.setApplication(theCurrentApp);
+				return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+			} else {
+				response.setError(ErrorCode.USER_UNKONWN);
+				return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+			}
+		} catch (ApplicationDoesNotExistException e) {
+			response.setError(ErrorCode.APPLICATION_UNKNOWN);
+			return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
 		}
 	}
 
 	@ApiOperation(value = "App creation")
 	@RequestMapping(value = "/user/{token}/app/create", produces = "application/json", method = RequestMethod.POST)
 	@CrossOrigin(origins = "*")
-	public ResponseEntity<Application> createNewApplication(@PathVariable("token") String token,
+	public ResponseEntity<Cabinet> createNewApplication(@PathVariable("token") String token,
 			@RequestBody String appName) {
 		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
-		Application application = null;
+		Cabinet application = null;
 		if (utilisateur != null) {
+			applicationService.resetAllAppToNotCurrent(token);
 			application = applicationService.createApp(appName);
 			try {
 				applicationService.associateApplicationToUser(application, utilisateur);
@@ -156,7 +201,7 @@ public class ApiController {
 				e.printStackTrace();
 			}
 		}
-		return new ResponseEntity<Application>(application, HttpStatus.OK);
+		return new ResponseEntity<Cabinet>(application, HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "App join")

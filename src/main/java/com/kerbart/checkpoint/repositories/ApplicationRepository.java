@@ -2,11 +2,11 @@ package com.kerbart.checkpoint.repositories;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.kerbart.checkpoint.model.Application;
+import com.kerbart.checkpoint.model.Cabinet;
 
-public interface ApplicationRepository extends CrudRepository<Application, Long> {
+public interface ApplicationRepository extends CrudRepository<Cabinet, Long> {
 
-    Application findByToken(String token);
+    Cabinet findByToken(String token);
 
-    Application findByShortCode(String shortCode);
+    Cabinet findByShortCode(String shortCode);
 }
