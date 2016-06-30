@@ -43,6 +43,8 @@ import com.kerbart.checkpoint.controller.responses.UtilisateurResponse;
 import com.kerbart.checkpoint.exceptions.CabinetDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
+import com.kerbart.checkpoint.exceptions.UserDoesNotExistException;
+import com.kerbart.checkpoint.exceptions.UserDoesNotHaveThisCabinetException;
 import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.Ordonnance;
@@ -252,15 +254,16 @@ public class ApiController {
 	@RequestMapping(value = "/patient/update", produces = "application/json", method = RequestMethod.POST)
 	@CrossOrigin(origins = "*")
 	public ResponseEntity<PatientResponse> updatePatient(@RequestBody PatientDTO patientDto) {
-		Utilisateur utilisateur = utilisateurRepository.findByToken(patientDto.getUtilisateurToken());
-		if (utilisateur == null) {
+		
+		try {
+			checkUserAndApplication(patientDto.getCabinetToken(), patientDto.getUtilisateurToken());
+		} catch (UserDoesNotExistException e1) {
 			return new ResponseEntity<PatientResponse>(new PatientResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
-		}
-		if (!cabinetService.checkApplicationBelongsUtilisateur(patientDto.getCabinetToken(),
-				patientDto.getUtilisateurToken())) {
+		} catch (UserDoesNotHaveThisCabinetException e1) {
 			return new ResponseEntity<PatientResponse>(
 					new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_CABINET), HttpStatus.OK);
 		}
+		
 		Patient patient = patientRepository.findByToken(patientDto.getPatient().getToken());
 		if (patient == null) {
 			PatientResponse response = new PatientResponse(ErrorCode.PATIENT_UNKNOWN);
@@ -450,6 +453,17 @@ public class ApiController {
 			response.setError(ErrorCode.CABINET_UNKNOWN);
 		}
 		return new ResponseEntity<CommentairesResponse>(response, HttpStatus.OK);
+	}
+	
+	private void checkUserAndApplication(String cabinetToken, String utilisateurToken) throws UserDoesNotExistException, UserDoesNotHaveThisCabinetException {
+		Utilisateur utilisateur = utilisateurRepository.findByToken(utilisateurToken);
+		if (utilisateur == null) {
+			throw new UserDoesNotExistException();
+		}
+		if (!cabinetService.checkApplicationBelongsUtilisateur(cabinetToken,
+				utilisateurToken)) {
+			throw new UserDoesNotHaveThisCabinetException();
+		}
 	}
 
 }
