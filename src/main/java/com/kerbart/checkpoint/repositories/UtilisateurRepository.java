@@ -14,6 +14,6 @@ public interface UtilisateurRepository extends CrudRepository<Utilisateur, Long>
 
     Utilisateur findByToken(String token);
     
-    @Query("SELECT ua.utilisateur FROM UtilisateurApplication ua WHERE ua.application.token = :appToken" )
-    List<Utilisateur> findByAppToken(@Param("appToken") String appToken);
+    @Query("SELECT ua.utilisateur FROM UtilisateurCabinet ua WHERE ua.cabinet.token = :cabinetToken" )
+    List<Utilisateur> findByAppToken(@Param("cabinetToken") String cabinetToken);
 }

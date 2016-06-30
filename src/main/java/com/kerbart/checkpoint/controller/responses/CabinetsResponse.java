@@ -1,16 +1,18 @@
 package com.kerbart.checkpoint.controller.responses;
 
+import java.util.List;
+
 import com.kerbart.checkpoint.model.Cabinet;
 
-public class ApplicationResponse {
+public class CabinetsResponse {
 	ErrorCode error;
-	Cabinet application;
+	List<Cabinet> cabinets;
 	
-	public ApplicationResponse() {
+	public CabinetsResponse() {
 		
 	}
 
-	public ApplicationResponse(ErrorCode error) {
+	public CabinetsResponse(ErrorCode error) {
 		this();
 		this.error = error;
 	}
@@ -23,12 +25,11 @@ public class ApplicationResponse {
 		this.error = error;
 	}
 
-	public Cabinet getApplication() {
-		return application;
+	public List<Cabinet> getCabinets() {
+		return cabinets;
 	}
 
-	public void setApplication(Cabinet application) {
-		this.application = application;
+	public void setCabinets(List<Cabinet> cabinets) {
+		this.cabinets = cabinets;
 	}
-
 }

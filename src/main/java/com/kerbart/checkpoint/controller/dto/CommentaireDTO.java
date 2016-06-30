@@ -3,7 +3,7 @@ package com.kerbart.checkpoint.controller.dto;
 public class CommentaireDTO {
 
     String commentaire;
-    String applicationToken;
+    String cabinetToken;
     String utilisateurToken;
     String patientToken;
 
@@ -15,15 +15,17 @@ public class CommentaireDTO {
 		this.commentaire = commentaire;
 	}
 
-	public String getApplicationToken() {
-        return applicationToken;
-    }
+	
 
-    public void setApplicationToken(String applicationToken) {
-        this.applicationToken = applicationToken;
-    }
+    public String getCabinetToken() {
+		return cabinetToken;
+	}
 
-    public String getUtilisateurToken() {
+	public void setCabinetToken(String cabinetToken) {
+		this.cabinetToken = cabinetToken;
+	}
+
+	public String getUtilisateurToken() {
         return utilisateurToken;
     }
 

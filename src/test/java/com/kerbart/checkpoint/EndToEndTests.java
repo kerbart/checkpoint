@@ -23,7 +23,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
+import com.kerbart.checkpoint.exceptions.CabinetDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Cabinet;
@@ -34,7 +34,7 @@ import com.kerbart.checkpoint.model.TourneeOccurence;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
 import com.kerbart.checkpoint.repositories.PatientRepository;
-import com.kerbart.checkpoint.services.ApplicationService;
+import com.kerbart.checkpoint.services.CabinetService;
 import com.kerbart.checkpoint.services.PatientService;
 import com.kerbart.checkpoint.services.TourneeService;
 import com.kerbart.checkpoint.services.UtilisateurService;
@@ -50,7 +50,7 @@ public class EndToEndTests {
 	UtilisateurService utilisateurService;
 
 	@Inject
-	ApplicationService applicationService;
+	CabinetService applicationService;
 
 	@Inject
 	TourneeService tourneeService;
@@ -121,12 +121,12 @@ public class EndToEndTests {
 		u2 = utilisateurService.create(u2);
 		assertNotEquals(null, u2.getToken());
 
-		Cabinet application = applicationService.createApp("An Application");
-		applicationService.associateApplicationToUser(application, u1);
+		Cabinet application = applicationService.createCabinet("An Application");
+		applicationService.associateCabinetToUser(application, u1);
 		List<Utilisateur> users = applicationService.getUtilisateursByApplication(application.getToken());
 		assertEquals(1, users.size());
 
-		applicationService.associateApplicationToUser(application, u2);
+		applicationService.associateCabinetToUser(application, u2);
 		users = applicationService.getUtilisateursByApplication(application.getToken());
 		assertEquals(2, users.size());
 
@@ -143,9 +143,9 @@ public class EndToEndTests {
 		u1.setPassword("123456789");
 
 		utilisateurService.create(u1);
-		Cabinet application = applicationService.createApp("An Application");
-		applicationService.associateApplicationToUser(application, u1);
-		applicationService.associateApplicationToUser(application, u1);
+		Cabinet application = applicationService.createCabinet("An Application");
+		applicationService.associateCabinetToUser(application, u1);
+		applicationService.associateCabinetToUser(application, u1);
 	}
 
 	@Test
@@ -162,23 +162,23 @@ public class EndToEndTests {
 	public void shouldCreateUserAppAndTournee() throws UserAlreadyAssociatedException, UserAlreadyExistsException {
 
 		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-		Cabinet app = applicationService.createApp("My App");
-		applicationService.associateApplicationToUser(app, u);
+		Cabinet app = applicationService.createCabinet("My App");
+		applicationService.associateCabinetToUser(app, u);
 		Tournee tournee = tourneeService.createTournee(app, "Tournée 1");
 		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
 		assertNotEquals(null, tourneeOccurence.getTournee());
-		assertEquals("My App", tourneeOccurence.getTournee().getApplication().getName());
+		assertEquals("My App", tourneeOccurence.getTournee().getCabinet().getName());
 	}
 
 	@Test
 	@DirtiesContext
-	public void shouldCheckIfApplicationBelongsToUtilisateur()
+	public void shouldCheckIfCabinetBelongsToUtilisateur()
 			throws UserAlreadyAssociatedException, UserAlreadyExistsException {
 
 		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-		Cabinet app = applicationService.createApp("My App");
-		Cabinet app2 = applicationService.createApp("My App 2");
-		applicationService.associateApplicationToUser(app, u);
+		Cabinet app = applicationService.createCabinet("My App");
+		Cabinet app2 = applicationService.createCabinet("My App 2");
+		applicationService.associateCabinetToUser(app, u);
 		assertEquals(true, applicationService.checkApplicationBelongsUtilisateur(app, u));
 		assertEquals(false, applicationService.checkApplicationBelongsUtilisateur(app2, u));
 	}
@@ -186,12 +186,12 @@ public class EndToEndTests {
 	@Test
 	@DirtiesContext
 	public void shouldCreateUserApplicationTourneeOrrurenceAndPatients()
-			throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+			throws UserAlreadyAssociatedException, UserAlreadyExistsException, CabinetDoesNotExistException {
 		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-		Cabinet app = applicationService.createApp("My App");
-		Cabinet appSecond = applicationService.createApp("My App 2");
-		applicationService.associateApplicationToUser(app, u);
-		applicationService.associateApplicationToUser(appSecond, u);
+		Cabinet app = applicationService.createCabinet("My App");
+		Cabinet appSecond = applicationService.createCabinet("My App 2");
+		applicationService.associateCabinetToUser(app, u);
+		applicationService.associateCabinetToUser(appSecond, u);
 		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
 		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
 		Patient p1 = patientService.createPatient(createRandomPatient(), app.getToken());
@@ -207,7 +207,7 @@ public class EndToEndTests {
 		System.out.println("Utilisateur " + u.getNom() + " / " + u.getToken());
 		for (Cabinet app2 : applicationService.getApplicationByUtilisateur(u.getToken())) {
 			System.out.println("+-> found app = " + app.getName() + " / " + app.getToken());
-			for (Tournee t : tourneeService.listTourneeByApplication(app2.getToken())) {
+			for (Tournee t : tourneeService.listTourneeByCabinet(app2.getToken())) {
 				System.out.println("  +-> found tournee " + t.getName() + " / " + t.getToken());
 				for (TourneeOccurence to : tourneeService.listTourneeOccurenceByTournee(t.getToken())) {
 					System.out.println("      +-> found tournee occurence " + to.getPatients().size() + " patients ");
@@ -220,7 +220,7 @@ public class EndToEndTests {
 		System.out.println("Utilisateur " + u.getNom() + " / " + u.getToken());
 		for (Cabinet app2 : applicationService.getApplicationByUtilisateur(u.getToken())) {
 			System.out.println("+-> found app = " + app.getName() + " / " + app.getToken());
-			for (Tournee t : tourneeService.listTourneeByApplication(app2.getToken())) {
+			for (Tournee t : tourneeService.listTourneeByCabinet(app2.getToken())) {
 				System.out.println("  +-> found tournee " + t.getName() + " / " + t.getToken());
 				for (TourneeOccurence to : tourneeService.listTourneeOccurenceByTournee(t.getToken())) {
 					System.out.println("      +-> found tournee occurence " + to.getPatients().size() + " patients ");
@@ -228,7 +228,7 @@ public class EndToEndTests {
 			}
 		}
 
-		Cabinet currentApp = applicationService.getCurrentApp(u);
+		Cabinet currentApp = applicationService.getCurrentCabinet(u);
 		
 		assertEquals(currentApp.getName(), "My App 2");
 	}
@@ -236,10 +236,10 @@ public class EndToEndTests {
 	@Test
 	@DirtiesContext
 	public void shouldCreateUserApplicationPatientAndUpdateIt()
-			throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+			throws UserAlreadyAssociatedException, UserAlreadyExistsException, CabinetDoesNotExistException {
 		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-		Cabinet app = applicationService.createApp("My App");
-		applicationService.associateApplicationToUser(app, u);
+		Cabinet app = applicationService.createCabinet("My App");
+		applicationService.associateCabinetToUser(app, u);
 		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
 		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
 		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
@@ -256,10 +256,10 @@ public class EndToEndTests {
 	@Test
 	@DirtiesContext
 	public void shouldCreateUserApplicationPatientAndOrdonance()
-			throws UserAlreadyAssociatedException, UserAlreadyExistsException, ApplicationDoesNotExistException {
+			throws UserAlreadyAssociatedException, UserAlreadyExistsException, CabinetDoesNotExistException {
 		Utilisateur u = utilisateurService.create("damien@kerbart.com", "toto1234", "Damien", "Kerbart");
-		Cabinet app = applicationService.createApp("My App");
-		applicationService.associateApplicationToUser(app, u);
+		Cabinet app = applicationService.createCabinet("My App");
+		applicationService.associateCabinetToUser(app, u);
 		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
 		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
 		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());

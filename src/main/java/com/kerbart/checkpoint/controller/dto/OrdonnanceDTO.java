@@ -5,7 +5,7 @@ import com.kerbart.checkpoint.model.Ordonnance;
 public class OrdonnanceDTO {
 
     Ordonnance ordonnance;
-    String applicationToken;
+    String cabinetToken;
     String utilisateurToken;
     String patientToken;
 
@@ -17,15 +17,15 @@ public class OrdonnanceDTO {
         this.ordonnance = ordonnance;
     }
 
-    public String getApplicationToken() {
-        return applicationToken;
-    }
+    public String getCabinetToken() {
+		return cabinetToken;
+	}
 
-    public void setApplicationToken(String applicationToken) {
-        this.applicationToken = applicationToken;
-    }
+	public void setCabinetToken(String cabinetToken) {
+		this.cabinetToken = cabinetToken;
+	}
 
-    public String getUtilisateurToken() {
+	public String getUtilisateurToken() {
         return utilisateurToken;
     }
 

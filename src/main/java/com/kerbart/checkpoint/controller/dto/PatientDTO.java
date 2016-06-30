@@ -5,7 +5,7 @@ import com.kerbart.checkpoint.model.Patient;
 public class PatientDTO {
 
     Patient patient;
-    String applicationToken;
+    String cabinetToken;
     String utilisateurToken;
 
     public Patient getPatient() {
@@ -16,15 +16,15 @@ public class PatientDTO {
         this.patient = patient;
     }
 
-    public String getApplicationToken() {
-        return applicationToken;
-    }
+    public String getCabinetToken() {
+		return cabinetToken;
+	}
 
-    public void setApplicationToken(String applicationToken) {
-        this.applicationToken = applicationToken;
-    }
+	public void setCabinetToken(String cabinetToken) {
+		this.cabinetToken = cabinetToken;
+	}
 
-    public String getUtilisateurToken() {
+	public String getUtilisateurToken() {
         return utilisateurToken;
     }
 

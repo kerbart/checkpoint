@@ -28,9 +28,9 @@ import com.kerbart.checkpoint.controller.dto.OrdonnanceDTO;
 import com.kerbart.checkpoint.controller.dto.PatientDTO;
 import com.kerbart.checkpoint.controller.dto.PatientSearchDTO;
 import com.kerbart.checkpoint.controller.dto.UserLoginDTO;
-import com.kerbart.checkpoint.controller.responses.ApplicationJoinResponse;
-import com.kerbart.checkpoint.controller.responses.ApplicationResponse;
-import com.kerbart.checkpoint.controller.responses.ApplicationsResponse;
+import com.kerbart.checkpoint.controller.responses.CabinetJoinResponse;
+import com.kerbart.checkpoint.controller.responses.CabinetResponse;
+import com.kerbart.checkpoint.controller.responses.CabinetsResponse;
 import com.kerbart.checkpoint.controller.responses.CommentaireResponse;
 import com.kerbart.checkpoint.controller.responses.CommentairesResponse;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
@@ -40,7 +40,7 @@ import com.kerbart.checkpoint.controller.responses.OrdonnancesResponse;
 import com.kerbart.checkpoint.controller.responses.PatientResponse;
 import com.kerbart.checkpoint.controller.responses.PatientsResponse;
 import com.kerbart.checkpoint.controller.responses.UtilisateurResponse;
-import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
+import com.kerbart.checkpoint.exceptions.CabinetDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyExistsException;
 import com.kerbart.checkpoint.model.Cabinet;
@@ -51,7 +51,7 @@ import com.kerbart.checkpoint.model.SecuredFile;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.PatientRepository;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
-import com.kerbart.checkpoint.services.ApplicationService;
+import com.kerbart.checkpoint.services.CabinetService;
 import com.kerbart.checkpoint.services.PatientService;
 import com.kerbart.checkpoint.services.UtilisateurService;
 
@@ -72,7 +72,7 @@ public class ApiController {
 	UtilisateurRepository utilisateurRepository;
 
 	@Inject
-	ApplicationService applicationService;
+	CabinetService cabinetService;
 
 	@Inject
 	PatientService patientService;
@@ -130,72 +130,72 @@ public class ApiController {
 	}
 
 	@ApiOperation(value = "App list")
-	@RequestMapping(value = "/user/{token}/app/list", produces = "application/json", method = RequestMethod.GET)
+	@RequestMapping(value = "/user/{token}/cabinet/list", produces = "application/json", method = RequestMethod.GET)
 	@CrossOrigin(origins = "*")
-	public ResponseEntity<ApplicationsResponse> listMyApplication(@PathVariable("token") String token) {
+	public ResponseEntity<CabinetsResponse> listMyApplication(@PathVariable("token") String token) {
 		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
-		ApplicationsResponse response = new ApplicationsResponse();
+		CabinetsResponse response = new CabinetsResponse();
 		if (utilisateur != null) {
-			List<Cabinet> list = applicationService.getApplicationByUtilisateur(utilisateur.getToken());
-			response.setApplications(list);
-			return new ResponseEntity<ApplicationsResponse>(response, HttpStatus.OK);
+			List<Cabinet> list = cabinetService.getApplicationByUtilisateur(utilisateur.getToken());
+			response.setCabinets(list);
+			return new ResponseEntity<CabinetsResponse>(response, HttpStatus.OK);
 		} else {
 			response.setError(ErrorCode.USER_UNKONWN);
-			return new ResponseEntity<ApplicationsResponse>(response, HttpStatus.OK);
+			return new ResponseEntity<CabinetsResponse>(response, HttpStatus.OK);
 		}
 	}
 
 	@ApiOperation(value = "Current App")
-	@RequestMapping(value = "/user/{token}/app/current", produces = "application/json", method = RequestMethod.GET)
+	@RequestMapping(value = "/user/{token}/cabinet/current", produces = "application/json", method = RequestMethod.GET)
 	@CrossOrigin(origins = "*")
-	public ResponseEntity<ApplicationResponse> getCurrentApplication(@PathVariable("token") String token) {
+	public ResponseEntity<CabinetResponse> getCurrentApplication(@PathVariable("token") String token) {
 		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
-		ApplicationResponse response = new ApplicationResponse();
+		CabinetResponse response = new CabinetResponse();
 		if (utilisateur != null) {
-			Cabinet theCurrentApp = applicationService.getCurrentApp(utilisateur);
-			response.setApplication(theCurrentApp);
-			return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+			Cabinet theCurrentApp = cabinetService.getCurrentCabinet(utilisateur);
+			response.setCabinet(theCurrentApp);
+			return new ResponseEntity<CabinetResponse>(response, HttpStatus.OK);
 		} else {
 			response.setError(ErrorCode.USER_UNKONWN);
-			return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+			return new ResponseEntity<CabinetResponse>(response, HttpStatus.OK);
 		}
 	}
 
 	@ApiOperation(value = "Current App")
-	@RequestMapping(value = "/user/{token}/app/change/{appToken}", produces = "application/json", method = RequestMethod.GET)
+	@RequestMapping(value = "/user/{token}/cabinet/change/{appToken}", produces = "application/json", method = RequestMethod.GET)
 	@CrossOrigin(origins = "*")
-	public ResponseEntity<ApplicationResponse> changeCurrentApplication(@PathVariable("token") String token,
+	public ResponseEntity<CabinetResponse> changeCurrentApplication(@PathVariable("token") String token,
 			@PathVariable("appToken") String appToken) {
 		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
-		ApplicationResponse response = new ApplicationResponse();
+		CabinetResponse response = new CabinetResponse();
 
 		try {
 			if (utilisateur != null) {
-				Cabinet theCurrentApp = applicationService.changeCurrentApp(utilisateur, appToken);
-				response.setApplication(theCurrentApp);
-				return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+				Cabinet theCurrentApp = cabinetService.changeCurrentCabinet(utilisateur, appToken);
+				response.setCabinet(theCurrentApp);
+				return new ResponseEntity<CabinetResponse>(response, HttpStatus.OK);
 			} else {
 				response.setError(ErrorCode.USER_UNKONWN);
-				return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+				return new ResponseEntity<CabinetResponse>(response, HttpStatus.OK);
 			}
-		} catch (ApplicationDoesNotExistException e) {
-			response.setError(ErrorCode.APPLICATION_UNKNOWN);
-			return new ResponseEntity<ApplicationResponse>(response, HttpStatus.OK);
+		} catch (CabinetDoesNotExistException e) {
+			response.setError(ErrorCode.CABINET_UNKNOWN);
+			return new ResponseEntity<CabinetResponse>(response, HttpStatus.OK);
 		}
 	}
 
 	@ApiOperation(value = "App creation")
-	@RequestMapping(value = "/user/{token}/app/create", produces = "application/json", method = RequestMethod.POST)
+	@RequestMapping(value = "/user/{token}/cabinet/create", produces = "application/json", method = RequestMethod.POST)
 	@CrossOrigin(origins = "*")
 	public ResponseEntity<Cabinet> createNewApplication(@PathVariable("token") String token,
 			@RequestBody String appName) {
 		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
 		Cabinet application = null;
 		if (utilisateur != null) {
-			applicationService.resetAllAppToNotCurrent(token);
-			application = applicationService.createApp(appName);
+			cabinetService.resetAllCabinetToNotCurrent(token);
+			application = cabinetService.createCabinet(appName);
 			try {
-				applicationService.associateApplicationToUser(application, utilisateur);
+				cabinetService.associateCabinetToUser(application, utilisateur);
 			} catch (UserAlreadyAssociatedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -205,22 +205,22 @@ public class ApiController {
 	}
 
 	@ApiOperation(value = "App join")
-	@RequestMapping(value = "/user/{token}/app/join", produces = "application/json", method = RequestMethod.POST)
+	@RequestMapping(value = "/user/{token}/cabinet/join", produces = "application/json", method = RequestMethod.POST)
 	@CrossOrigin(origins = "*")
-	public ResponseEntity<ApplicationJoinResponse> joinApplication(@PathVariable("token") String token,
+	public ResponseEntity<CabinetJoinResponse> joinApplication(@PathVariable("token") String token,
 			@RequestBody String shortCode) {
 		Utilisateur utilisateur = utilisateurRepository.findByToken(token);
-		ApplicationJoinResponse response = new ApplicationJoinResponse();
+		CabinetJoinResponse response = new CabinetJoinResponse();
 		if (utilisateur != null) {
 			try {
-				applicationService.associateApplicationToUser(shortCode, utilisateur);
+				cabinetService.associateCabinetToUser(shortCode, utilisateur);
 			} catch (UserAlreadyAssociatedException e) {
-				response.setError(ErrorCode.USER_ALREADY_HAVE_THIS_APPLICATION);
-			} catch (ApplicationDoesNotExistException e) {
-				response.setError(ErrorCode.APPLICATION_UNKNOWN);
+				response.setError(ErrorCode.USER_ALREADY_HAVE_THIS_CABINET);
+			} catch (CabinetDoesNotExistException e) {
+				response.setError(ErrorCode.CABINET_UNKNOWN);
 			}
 		}
-		return new ResponseEntity<ApplicationJoinResponse>(response, HttpStatus.OK);
+		return new ResponseEntity<CabinetJoinResponse>(response, HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "Patient creation")
@@ -231,18 +231,18 @@ public class ApiController {
 		if (utilisateur == null) {
 			return new ResponseEntity<PatientResponse>(new PatientResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
 		}
-		if (!applicationService.checkApplicationBelongsUtilisateur(patientDto.getApplicationToken(),
+		if (!cabinetService.checkApplicationBelongsUtilisateur(patientDto.getCabinetToken(),
 				patientDto.getUtilisateurToken())) {
 			return new ResponseEntity<PatientResponse>(
-					new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+					new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_CABINET), HttpStatus.OK);
 		}
 		Patient patient = new Patient();
 		BeanUtils.copyProperties(patientDto.getPatient(), patient);
 		try {
-			Patient result = patientService.createPatient(patient, patientDto.getApplicationToken());
+			Patient result = patientService.createPatient(patient, patientDto.getCabinetToken());
 			return new ResponseEntity<PatientResponse>(new PatientResponse(result), HttpStatus.OK);
-		} catch (ApplicationDoesNotExistException e) {
-			PatientResponse response = new PatientResponse(ErrorCode.APPLICATION_UNKNOWN);
+		} catch (CabinetDoesNotExistException e) {
+			PatientResponse response = new PatientResponse(ErrorCode.CABINET_UNKNOWN);
 			return new ResponseEntity<PatientResponse>(response, HttpStatus.OK);
 		}
 	}
@@ -255,10 +255,10 @@ public class ApiController {
 		if (utilisateur == null) {
 			return new ResponseEntity<PatientResponse>(new PatientResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
 		}
-		if (!applicationService.checkApplicationBelongsUtilisateur(patientDto.getApplicationToken(),
+		if (!cabinetService.checkApplicationBelongsUtilisateur(patientDto.getCabinetToken(),
 				patientDto.getUtilisateurToken())) {
 			return new ResponseEntity<PatientResponse>(
-					new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+					new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_CABINET), HttpStatus.OK);
 		}
 		Patient patient = patientRepository.findByToken(patientDto.getPatient().getToken());
 		if (patient == null) {
@@ -268,10 +268,10 @@ public class ApiController {
 
 		BeanUtils.copyProperties(patientDto.getPatient(), patient);
 		try {
-			Patient result = patientService.updatePatient(patient, patientDto.getApplicationToken());
+			Patient result = patientService.updatePatient(patient, patientDto.getCabinetToken());
 			return new ResponseEntity<PatientResponse>(new PatientResponse(result), HttpStatus.OK);
-		} catch (ApplicationDoesNotExistException e) {
-			PatientResponse response = new PatientResponse(ErrorCode.APPLICATION_UNKNOWN);
+		} catch (CabinetDoesNotExistException e) {
+			PatientResponse response = new PatientResponse(ErrorCode.CABINET_UNKNOWN);
 			return new ResponseEntity<PatientResponse>(response, HttpStatus.OK);
 		}
 	}
@@ -284,10 +284,10 @@ public class ApiController {
 		if (utilisateur == null) {
 			return new ResponseEntity<PatientResponse>(new PatientResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
 		}
-		if (!applicationService.checkApplicationBelongsUtilisateur(patientDto.getApplicationToken(),
+		if (!cabinetService.checkApplicationBelongsUtilisateur(patientDto.getCabinetToken(),
 				patientDto.getUtilisateurToken())) {
 			return new ResponseEntity<PatientResponse>(
-					new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+					new PatientResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_CABINET), HttpStatus.OK);
 		}
 		Patient patient = patientRepository.findByToken(patientDto.getPatient().getToken());
 		if (patient == null) {
@@ -307,12 +307,12 @@ public class ApiController {
 		if (utilisateur == null) {
 			return new ResponseEntity<PatientsResponse>(new PatientsResponse(ErrorCode.USER_UNKONWN), HttpStatus.OK);
 		}
-		if (!applicationService.checkApplicationBelongsUtilisateur(patientSearchDto.getApplicationToken(),
+		if (!cabinetService.checkApplicationBelongsUtilisateur(patientSearchDto.getCabinetToken(),
 				patientSearchDto.getUtilisateurToken())) {
 			return new ResponseEntity<PatientsResponse>(
-					new PatientsResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+					new PatientsResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_CABINET), HttpStatus.OK);
 		}
-		List<Patient> patients = patientRepository.findAllByApplication(patientSearchDto.getApplicationToken());
+		List<Patient> patients = patientRepository.findAllByCabinet(patientSearchDto.getCabinetToken());
 
 		PatientsResponse response = new PatientsResponse(patients);
 		return new ResponseEntity<PatientsResponse>(response, HttpStatus.OK);
@@ -328,10 +328,10 @@ public class ApiController {
 			return new ResponseEntity<OrdonnanceResponse>(new OrdonnanceResponse(ErrorCode.USER_UNKONWN),
 					HttpStatus.OK);
 		}
-		if (!applicationService.checkApplicationBelongsUtilisateur(ordonnanceDto.getApplicationToken(),
+		if (!cabinetService.checkApplicationBelongsUtilisateur(ordonnanceDto.getCabinetToken(),
 				ordonnanceDto.getUtilisateurToken())) {
 			return new ResponseEntity<OrdonnanceResponse>(
-					new OrdonnanceResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+					new OrdonnanceResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_CABINET), HttpStatus.OK);
 		}
 
 		Patient patient = patientRepository.findByToken(ordonnanceDto.getPatientToken());
@@ -344,12 +344,12 @@ public class ApiController {
 
 		Ordonnance ordonnance;
 		try {
-			ordonnance = patientService.createOrdonance(utilisateur, patient, ordonnanceDto.getApplicationToken(),
+			ordonnance = patientService.createOrdonance(utilisateur, patient, ordonnanceDto.getCabinetToken(),
 					ordonnanceDto.getOrdonnance().getDateDebut(), ordonnanceDto.getOrdonnance().getDateFin(),
 					ordonnanceDto.getOrdonnance().getCommentaire());
 			ordonnanceResponse.setOrdonnance(ordonnance);
-		} catch (ApplicationDoesNotExistException e) {
-			ordonnanceResponse.setError(ErrorCode.APPLICATION_UNKNOWN);
+		} catch (CabinetDoesNotExistException e) {
+			ordonnanceResponse.setError(ErrorCode.CABINET_UNKNOWN);
 		}
 
 		return new ResponseEntity<OrdonnanceResponse>(ordonnanceResponse, HttpStatus.OK);
@@ -367,8 +367,8 @@ public class ApiController {
 					source.getContentType(), IOUtils.toByteArray(source.getInputStream()));
 			fileResponse.setToken(securedFile.getToken());
 
-		} catch (ApplicationDoesNotExistException e) {
-			fileResponse.setError(ErrorCode.APPLICATION_UNKNOWN);
+		} catch (CabinetDoesNotExistException e) {
+			fileResponse.setError(ErrorCode.CABINET_UNKNOWN);
 		} catch (IOException e) {
 			fileResponse.setError(ErrorCode.FILE_UPLOAD_ERROR);
 		}
@@ -385,8 +385,8 @@ public class ApiController {
 		try {
 			List<Ordonnance> ordonnances = patientService.getOrdonnances(applicationToken, patientToken);
 			response.setOrdonnances(ordonnances);
-		} catch (ApplicationDoesNotExistException e) {
-			response.setError(ErrorCode.APPLICATION_UNKNOWN);
+		} catch (CabinetDoesNotExistException e) {
+			response.setError(ErrorCode.CABINET_UNKNOWN);
 		}
 		return new ResponseEntity<OrdonnancesResponse>(response, HttpStatus.OK);
 	}
@@ -397,7 +397,7 @@ public class ApiController {
 			@RequestParam("fileToken") String fileToken) {
 		try {
 			return patientService.getFileOrdonnance(applicationToken, fileToken);
-		} catch (ApplicationDoesNotExistException e) {
+		} catch (CabinetDoesNotExistException e) {
 			return null;
 		}
 	}
@@ -412,10 +412,10 @@ public class ApiController {
 			return new ResponseEntity<CommentaireResponse>(new CommentaireResponse(ErrorCode.USER_UNKONWN),
 					HttpStatus.OK);
 		}
-		if (!applicationService.checkApplicationBelongsUtilisateur(commentaireDto.getApplicationToken(),
+		if (!cabinetService.checkApplicationBelongsUtilisateur(commentaireDto.getCabinetToken(),
 				commentaireDto.getUtilisateurToken())) {
 			return new ResponseEntity<CommentaireResponse>(
-					new CommentaireResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_APPLICATION), HttpStatus.OK);
+					new CommentaireResponse(ErrorCode.USER_DOES_KNOW_HAVE_THIS_CABINET), HttpStatus.OK);
 		}
 
 		Patient patient = patientRepository.findByToken(commentaireDto.getPatientToken());
@@ -428,11 +428,11 @@ public class ApiController {
 
 		Commentaire commentaire;
 		try {
-			commentaire = patientService.createCommentaire(utilisateur, patient, commentaireDto.getApplicationToken(),
+			commentaire = patientService.createCommentaire(utilisateur, patient, commentaireDto.getCabinetToken(),
 					commentaireDto.getCommentaire());
 			commentaireResponse.setCommentaire(commentaire);
-		} catch (ApplicationDoesNotExistException e) {
-			commentaireResponse.setError(ErrorCode.APPLICATION_UNKNOWN);
+		} catch (CabinetDoesNotExistException e) {
+			commentaireResponse.setError(ErrorCode.CABINET_UNKNOWN);
 		}
 
 		return new ResponseEntity<CommentaireResponse>(commentaireResponse, HttpStatus.OK);
@@ -448,8 +448,8 @@ public class ApiController {
 		try {
 			List<Commentaire> commentaires = patientService.getCommentaires(applicationToken, patientToken);
 			response.setCommentaires(commentaires);
-		} catch (ApplicationDoesNotExistException e) {
-			response.setError(ErrorCode.APPLICATION_UNKNOWN);
+		} catch (CabinetDoesNotExistException e) {
+			response.setError(ErrorCode.CABINET_UNKNOWN);
 		}
 		return new ResponseEntity<CommentairesResponse>(response, HttpStatus.OK);
 	}

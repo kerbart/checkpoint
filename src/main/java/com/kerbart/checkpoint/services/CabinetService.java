@@ -10,23 +10,23 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 
-import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
+import com.kerbart.checkpoint.exceptions.CabinetDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserAlreadyAssociatedException;
 import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Utilisateur;
-import com.kerbart.checkpoint.model.UtilisateurApplication;
-import com.kerbart.checkpoint.repositories.ApplicationRepository;
+import com.kerbart.checkpoint.model.UtilisateurCabinet;
+import com.kerbart.checkpoint.repositories.CabinetRepository;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
 
 @Repository("applicationService")
 @Transactional
-public class ApplicationService {
+public class CabinetService {
 
 	@PersistenceContext
 	private EntityManager em;
 
 	@Inject
-	ApplicationRepository applicationRepository;
+	CabinetRepository applicationRepository;
 
 	@Inject
 	UtilisateurRepository utilisateurRepository;
@@ -37,7 +37,7 @@ public class ApplicationService {
 	 * @param name
 	 * @return
 	 */
-	public Cabinet createApp(String name) {
+	public Cabinet createCabinet(String name) {
 		Cabinet app = new Cabinet();
 		app.setName(name);
 		app.setCurrent(true);
@@ -45,7 +45,7 @@ public class ApplicationService {
 		return app;
 	}
 
-	public void resetAllAppToNotCurrent(String utilisateurToken) {
+	public void resetAllCabinetToNotCurrent(String utilisateurToken) {
 		List<Cabinet> apps = getApplicationByUtilisateur(utilisateurToken);
 		for (Cabinet app : apps) {
 			app.setCurrent(false);
@@ -53,7 +53,7 @@ public class ApplicationService {
 		}
 	}
 
-	public Cabinet getCurrentApp(Utilisateur utilisateur) {
+	public Cabinet getCurrentCabinet(Utilisateur utilisateur) {
 		List<Cabinet> list = this.getApplicationByUtilisateur(utilisateur.getToken());
 		Cabinet theCurrentApp = null;
 		for (Cabinet app : list) {
@@ -64,11 +64,11 @@ public class ApplicationService {
 		return theCurrentApp;
 	}
 
-	public Cabinet changeCurrentApp(Utilisateur utilisateur, String appToken) throws ApplicationDoesNotExistException {
-		resetAllAppToNotCurrent(utilisateur.getToken());
+	public Cabinet changeCurrentCabinet(Utilisateur utilisateur, String appToken) throws CabinetDoesNotExistException {
+		resetAllCabinetToNotCurrent(utilisateur.getToken());
 		Cabinet cabinet = applicationRepository.findByToken(appToken);
 		if (cabinet == null) {
-			throw new ApplicationDoesNotExistException();
+			throw new CabinetDoesNotExistException();
 		}
 		
 		cabinet.setCurrent(true);
@@ -76,32 +76,32 @@ public class ApplicationService {
 		return cabinet;
 	}
 
-	public void associateApplicationToUser(String shortCode, Utilisateur user)
-			throws UserAlreadyAssociatedException, ApplicationDoesNotExistException {
+	public void associateCabinetToUser(String shortCode, Utilisateur user)
+			throws UserAlreadyAssociatedException, CabinetDoesNotExistException {
 		Cabinet app = applicationRepository.findByShortCode(shortCode);
 		if (app == null) {
-			throw new ApplicationDoesNotExistException();
+			throw new CabinetDoesNotExistException();
 		}
-		this.associateApplicationToUser(app, user);
+		this.associateCabinetToUser(app, user);
 	}
 
 	/**
 	 * Link an application to a user
 	 * 
-	 * @param app
+	 * @param cabinet
 	 * @param user
 	 * @throws UserAlreadyAssociatedException
 	 */
-	public void associateApplicationToUser(Cabinet app, Utilisateur user) throws UserAlreadyAssociatedException {
-		List<Utilisateur> utilisateurs = this.getUtilisateursByApplication(app.getToken());
+	public void associateCabinetToUser(Cabinet cabinet, Utilisateur user) throws UserAlreadyAssociatedException {
+		List<Utilisateur> utilisateurs = this.getUtilisateursByApplication(cabinet.getToken());
 		for (Utilisateur u : utilisateurs) {
 			if (user.getId() == u.getId()) {
 				throw new UserAlreadyAssociatedException("Utilisateur déjà associé à cette application");
 			}
 		}
 
-		UtilisateurApplication userApp = new UtilisateurApplication();
-		userApp.setApplication(app);
+		UtilisateurCabinet userApp = new UtilisateurCabinet();
+		userApp.setCabinet(cabinet);
 		userApp.setUtilisateur(user);
 		em.persist(userApp);
 	}
@@ -114,7 +114,7 @@ public class ApplicationService {
 	 */
 	public List<Utilisateur> getUtilisateursByApplication(String applicationToken) {
 		Query query = em
-				.createQuery("select ua.utilisateur from UtilisateurApplication ua where ua.application.token = :token")
+				.createQuery("select ua.utilisateur from UtilisateurCabinet ua where ua.cabinet.token = :token")
 				.setParameter("token", applicationToken);
 		return (List<Utilisateur>) query.getResultList();
 	}
@@ -128,7 +128,7 @@ public class ApplicationService {
 	public List<Cabinet> getApplicationByUtilisateur(String utilisateurToken) {
 		Query query = em
 				.createQuery(
-						"select ua.application from UtilisateurApplication ua  where ua.utilisateur.token = :token")
+						"select ua.cabinet from UtilisateurCabinet ua  where ua.utilisateur.token = :token")
 				.setParameter("token", utilisateurToken);
 		return (List<Cabinet>) query.getResultList();
 	}
@@ -153,18 +153,18 @@ public class ApplicationService {
 	/**
 	 * Check if an application belongs to a user (with pojos)
 	 * 
-	 * @param application
+	 * @param cabinet
 	 * @param utilisateur
 	 * @return
 	 */
-	public Boolean checkApplicationBelongsUtilisateur(Cabinet application, Utilisateur utilisateur) {
+	public Boolean checkApplicationBelongsUtilisateur(Cabinet cabinet, Utilisateur utilisateur) {
 		Query query = em
-				.createQuery("select ua from UtilisateurApplication ua  "
+				.createQuery("select ua from UtilisateurCabinet ua  "
 						+ " where ua.utilisateur.token = :tokenUtilisateur "
-						+ " and ua.application.token = :tokenApplication ")
+						+ " and ua.cabinet.token = :tokenCabinet ")
 				.setParameter("tokenUtilisateur", utilisateur.getToken())
-				.setParameter("tokenApplication", application.getToken());
-		List<UtilisateurApplication> list = query.getResultList();
+				.setParameter("tokenCabinet", cabinet.getToken());
+		List<UtilisateurCabinet> list = query.getResultList();
 		if (list != null && list.size() == 1) {
 			return true;
 		}

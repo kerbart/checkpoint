@@ -15,7 +15,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 
-import com.kerbart.checkpoint.exceptions.ApplicationDoesNotExistException;
+import com.kerbart.checkpoint.exceptions.CabinetDoesNotExistException;
 import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.Ordonnance;
@@ -23,7 +23,7 @@ import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.PatientDansTournee;
 import com.kerbart.checkpoint.model.SecuredFile;
 import com.kerbart.checkpoint.model.Utilisateur;
-import com.kerbart.checkpoint.repositories.ApplicationRepository;
+import com.kerbart.checkpoint.repositories.CabinetRepository;
 import com.kerbart.checkpoint.repositories.CommentaireRepository;
 import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
 
@@ -35,7 +35,7 @@ public class PatientService {
     private EntityManager em;
 
     @Inject
-    ApplicationRepository applicationRepository;
+    CabinetRepository cabinetRepository;
 
     @Inject
     OrdonnanceRepository ordonnanceRepository;
@@ -49,21 +49,21 @@ public class PatientService {
     @Inject
     FileService fileService;
 
-    public Patient createPatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
-        Cabinet app = applicationRepository.findByToken(applicationToken);
-        if (app == null) {
-            throw new ApplicationDoesNotExistException();
+    public Patient createPatient(Patient patient, String cabinetToken) throws CabinetDoesNotExistException {
+        Cabinet cabinet = cabinetRepository.findByToken(cabinetToken);
+        if (cabinet == null) {
+            throw new CabinetDoesNotExistException();
         }
-        patient.setApplication(app);
+        patient.setCabinet(cabinet);
         em.persist(patient);
         return patient;
     }
 
-    public Ordonnance createOrdonance(Utilisateur utilisateur, Patient patient, String applicationToken, Date dateDebut, Date dateFin, String commentaire)
-            throws ApplicationDoesNotExistException {
-        Cabinet app = applicationRepository.findByToken(applicationToken);
+    public Ordonnance createOrdonance(Utilisateur utilisateur, Patient patient, String cabinetToken, Date dateDebut, Date dateFin, String commentaire)
+            throws CabinetDoesNotExistException {
+        Cabinet app = cabinetRepository.findByToken(cabinetToken);
         if (app == null) {
-            throw new ApplicationDoesNotExistException();
+            throw new CabinetDoesNotExistException();
         }
         Ordonnance ordonnance = new Ordonnance(patient);
         ordonnance.setCreateur(utilisateur);
@@ -74,11 +74,11 @@ public class PatientService {
         return ordonnance;
     }
     
-    public Commentaire createCommentaire(Utilisateur utilisateur, Patient patient, String applicationToken, String texte)
-            throws ApplicationDoesNotExistException {
-        Cabinet app = applicationRepository.findByToken(applicationToken);
+    public Commentaire createCommentaire(Utilisateur utilisateur, Patient patient, String cabinetToken, String texte)
+            throws CabinetDoesNotExistException {
+        Cabinet app = cabinetRepository.findByToken(cabinetToken);
         if (app == null) {
-            throw new ApplicationDoesNotExistException();
+            throw new CabinetDoesNotExistException();
         }
         Commentaire commentaire = new Commentaire(patient);
         commentaire.setCreateur(utilisateur);
@@ -89,10 +89,10 @@ public class PatientService {
     }
 
     public SecuredFile addFileOrdonance(String applicationToken, String ordonnanceToken, String contentType,
-            byte[] bytes) throws ApplicationDoesNotExistException {
-        Cabinet app = applicationRepository.findByToken(applicationToken);
+            byte[] bytes) throws CabinetDoesNotExistException {
+        Cabinet app = cabinetRepository.findByToken(applicationToken);
         if (app == null) {
-            throw new ApplicationDoesNotExistException();
+            throw new CabinetDoesNotExistException();
         }
         Ordonnance ordonnance = ordonnanceRepository.findByToken(ordonnanceToken);
         SecuredFile securedFile = new SecuredFile();
@@ -106,17 +106,17 @@ public class PatientService {
         return securedFile;
     }
 
-    public byte[] getFileOrdonnance(String applicationToken, String fileToken)
-            throws ApplicationDoesNotExistException {
-        Cabinet app = applicationRepository.findByToken(applicationToken);
+    public byte[] getFileOrdonnance(String cabinetToken, String fileToken)
+            throws CabinetDoesNotExistException {
+        Cabinet app = cabinetRepository.findByToken(cabinetToken);
         if (app == null) {
-            throw new ApplicationDoesNotExistException();
+            throw new CabinetDoesNotExistException();
         }
         Query query = em.createQuery("select s from SecuredFile s " + " where s.token = :fileToken ")
                 .setParameter("fileToken", fileToken);
 
         SecuredFile sec = (SecuredFile) query.getSingleResult();
-        File decryptedFile = fileService.decryptFile(applicationToken, new File(sec.getPath()));
+        File decryptedFile = fileService.decryptFile(cabinetToken, new File(sec.getPath()));
         try {
             byte[] content = Files.readAllBytes(Paths.get(decryptedFile.getAbsolutePath()));
             return content;
@@ -125,30 +125,30 @@ public class PatientService {
         }
     }
     
-    public List<Ordonnance> getOrdonnances(String applicationToken, String patientToken) throws ApplicationDoesNotExistException {
-    	 Cabinet app = applicationRepository.findByToken(applicationToken);
+    public List<Ordonnance> getOrdonnances(String cabinetToken, String patientToken) throws CabinetDoesNotExistException {
+    	 Cabinet app = cabinetRepository.findByToken(cabinetToken);
          if (app == null) {
-             throw new ApplicationDoesNotExistException();
+             throw new CabinetDoesNotExistException();
          }
     	return ordonnanceRepository.findByPatientToken(patientToken);
     }
     
     
-    public List<Commentaire> getCommentaires(String applicationToken, String patientToken) throws ApplicationDoesNotExistException {
-    	Cabinet app = applicationRepository.findByToken(applicationToken);
+    public List<Commentaire> getCommentaires(String cabinetToken, String patientToken) throws CabinetDoesNotExistException {
+    	Cabinet app = cabinetRepository.findByToken(cabinetToken);
         if (app == null) {
-            throw new ApplicationDoesNotExistException();
+            throw new CabinetDoesNotExistException();
         }
     	return commentaireRepository.findByPatientToken(patientToken);
     }
     
 
-    public Patient updatePatient(Patient patient, String applicationToken) throws ApplicationDoesNotExistException {
-        Cabinet app = applicationRepository.findByToken(applicationToken);
+    public Patient updatePatient(Patient patient, String applicationToken) throws CabinetDoesNotExistException {
+        Cabinet app = cabinetRepository.findByToken(applicationToken);
         if (app == null) {
-            throw new ApplicationDoesNotExistException();
+            throw new CabinetDoesNotExistException();
         }
-        patient.setApplication(app);
+        patient.setCabinet(app);
         return em.merge(patient);
     }
 

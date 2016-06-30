@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.kerbart.checkpoint.exceptions.CryptoException;
 import com.kerbart.checkpoint.helper.CryptoUtils;
 import com.kerbart.checkpoint.model.Cabinet;
-import com.kerbart.checkpoint.repositories.ApplicationRepository;
+import com.kerbart.checkpoint.repositories.CabinetRepository;
 
 @Service
 public class FileService {
@@ -22,7 +22,7 @@ public class FileService {
     String storagePath;
 
     @Inject
-    ApplicationRepository applicationRepository;
+    CabinetRepository applicationRepository;
 
     public String storeFile(String applicationToken, File inputFile) {
         String filePath = storagePath + RandomStringUtils.randomAlphanumeric(32);

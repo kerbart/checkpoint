@@ -33,8 +33,8 @@ public class TourneeService {
     @Inject
     TourneeOccurenceRepository tourneeOccurenceRepository;
 
-    public Tournee createTournee(Cabinet application, String name) {
-        Tournee tournee = new Tournee(application, name);
+    public Tournee createTournee(Cabinet cabinet, String name) {
+        Tournee tournee = new Tournee(cabinet, name);
         tournee.setDateCreation(new Date());
         tournee.setName(name);
         em.persist(tournee);
@@ -71,8 +71,8 @@ public class TourneeService {
         return pdt;
     }
 
-    public List<Tournee> listTourneeByApplication(String appToken) {
-        Query query = em.createQuery("select t from Tournee t  where t.application.token = :token")
+    public List<Tournee> listTourneeByCabinet(String appToken) {
+        Query query = em.createQuery("select t from Tournee t  where t.cabinet.token = :token")
                 .setParameter("token", appToken);
         return (List<Tournee>) query.getResultList();
     }

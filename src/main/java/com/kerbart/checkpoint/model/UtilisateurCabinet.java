@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class UtilisateurApplication {
+public class UtilisateurCabinet {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -19,7 +19,7 @@ public class UtilisateurApplication {
 	Utilisateur utilisateur;
 
 	@ManyToOne	
-	Cabinet application;
+	Cabinet cabinet;
 
 	public Integer getId() {
 		return id;
@@ -37,13 +37,14 @@ public class UtilisateurApplication {
 		this.utilisateur = utilisateur;
 	}
 
-	public Cabinet getApplication() {
-		return application;
+	public Cabinet getCabinet() {
+		return cabinet;
 	}
 
-	public void setApplication(Cabinet application) {
-		this.application = application;
+	public void setCabinet(Cabinet cabinet) {
+		this.cabinet = cabinet;
 	}
+
 
 	
 }

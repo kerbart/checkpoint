@@ -4,7 +4,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.kerbart.checkpoint.model.Cabinet;
 
-public interface ApplicationRepository extends CrudRepository<Cabinet, Long> {
+public interface CabinetRepository extends CrudRepository<Cabinet, Long> {
 
     Cabinet findByToken(String token);
 

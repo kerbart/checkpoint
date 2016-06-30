@@ -12,6 +12,6 @@ public interface PatientRepository extends CrudRepository<Patient, Long> {
 
     Patient findByToken(String token);
 
-    @Query("SELECT p FROM Patient p WHERE p.application.token = :applicationToken")
-    List<Patient> findAllByApplication(@Param("applicationToken") String applicationToken);
+    @Query("SELECT p FROM Patient p WHERE p.cabinet.token = :cabinetToken")
+    List<Patient> findAllByCabinet(@Param("cabinetToken") String cabinetToken);
 }

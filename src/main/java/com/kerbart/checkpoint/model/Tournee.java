@@ -33,7 +33,7 @@ public class Tournee implements Serializable {
     String token;
 
     @ManyToOne
-    Cabinet application;
+    Cabinet cabinet;
 
     public Tournee() {
         super();
@@ -45,9 +45,9 @@ public class Tournee implements Serializable {
         this.name = name;
     }
 
-    public Tournee(Cabinet application, String name) {
+    public Tournee(Cabinet cabinet, String name) {
         this(name);
-        this.application = application;
+        this.cabinet = cabinet;
     }
 
     public Long getId() {
@@ -66,12 +66,12 @@ public class Tournee implements Serializable {
         this.name = name;
     }
 
-    public Cabinet getApplication() {
-        return application;
+    public Cabinet getCabinet() {
+        return cabinet;
     }
 
-    public void setApplication(Cabinet application) {
-        this.application = application;
+    public void setCabinet(Cabinet cabinet) {
+        this.cabinet = cabinet;
     }
 
     public Date getDateCreation() {

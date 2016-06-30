@@ -1,13 +1,13 @@
 package com.kerbart.checkpoint.controller.responses;
 
-public class ApplicationJoinResponse {
+public class CabinetJoinResponse {
 	ErrorCode error;
 	
-	public ApplicationJoinResponse() {
+	public CabinetJoinResponse() {
 		
 	}
 
-	public ApplicationJoinResponse(ErrorCode error) {
+	public CabinetJoinResponse(ErrorCode error) {
 		this();
 		this.error = error;
 	}

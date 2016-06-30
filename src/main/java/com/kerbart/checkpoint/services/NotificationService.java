@@ -17,7 +17,7 @@ import com.kerbart.checkpoint.model.NotificationType;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.model.UtilisateurNotification;
-import com.kerbart.checkpoint.repositories.ApplicationRepository;
+import com.kerbart.checkpoint.repositories.CabinetRepository;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
 
 @Service
@@ -28,7 +28,7 @@ public class NotificationService {
     private EntityManager em;
 
     @Inject
-    ApplicationRepository applicationRepository;
+    CabinetRepository applicationRepository;
 
     @Inject
     UtilisateurRepository utilisateurRepository;
