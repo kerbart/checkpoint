@@ -194,9 +194,9 @@ public class EndToEndTests {
 		applicationService.associateCabinetToUser(appSecond, u);
 		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
 		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-		Patient p1 = patientService.createPatient(createRandomPatient(), app.getToken());
-		Patient p2 = patientService.createPatient(createRandomPatient(), app.getToken());
-		Patient p3 = patientService.createPatient(createRandomPatient(), app.getToken());
+		Patient p1 = patientService.createPatient(createRandomPatient(), app.getToken(), u.getToken());
+		Patient p2 = patientService.createPatient(createRandomPatient(), app.getToken(), u.getToken());
+		Patient p3 = patientService.createPatient(createRandomPatient(), app.getToken(), u.getToken());
 		tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p1, 1);
 		tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p2, 2);
 		tourneeService.addPatientToTourneeOccurence(tourneeOccurence, p3, 3);
@@ -242,7 +242,7 @@ public class EndToEndTests {
 		applicationService.associateCabinetToUser(app, u);
 		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
 		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
+		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken(), u.getToken());
 
 		patient.setNom("BIDULE");
 		patientService.updatePatient(patient, app.getToken(), u.getToken());
@@ -262,7 +262,7 @@ public class EndToEndTests {
 		applicationService.associateCabinetToUser(app, u);
 		Tournee tournee = tourneeService.createTournee(app, "Ma Tournee");
 		TourneeOccurence tourneeOccurence = tourneeService.createTourneeOccurence(tournee, new Date());
-		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
+		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken(), u.getToken());
 		Ordonnance ordonnance = patientService.createOrdonance(u, patient, app.getToken(), new Date(), new Date(), "");
 		patientService.addFileOrdonance(app.getToken(), ordonnance.getToken(), "image/png", "Du contenu".getBytes());
 		ordonnance = ordonnanceRepository.findByToken(ordonnance.getToken());
