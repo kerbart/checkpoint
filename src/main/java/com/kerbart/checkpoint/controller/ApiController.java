@@ -50,6 +50,7 @@ import com.kerbart.checkpoint.exceptions.UserDoesNotExistException;
 import com.kerbart.checkpoint.exceptions.UserDoesNotHaveThisCabinetException;
 import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Commentaire;
+import com.kerbart.checkpoint.model.NotificationType;
 import com.kerbart.checkpoint.model.Ordonnance;
 import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.SecuredFile;
@@ -156,9 +157,9 @@ public class ApiController {
 			return new ResponseEntity<NotificationResponse>(response, HttpStatus.OK);
 		}
 
-		response.setNotificationCommentaire(notificationUtilisateurRepository.findAllNewComments(commonDto.getUtilisateurToken(), commonDto.getCabinetToken()));
-		response.setNotificationOrdonnance( notificationUtilisateurRepository.findAllNewOrdonnances(commonDto.getUtilisateurToken(), commonDto.getCabinetToken()));
-		response.setNotificationPatients(notificationUtilisateurRepository.findAllNewPatients(commonDto.getUtilisateurToken(), commonDto.getCabinetToken()));
+		response.setNotificationCommentaire(notificationUtilisateurRepository.findAllNewByType(commonDto.getUtilisateurToken(), commonDto.getCabinetToken(), NotificationType.NEW_COMMENT));
+		response.setNotificationOrdonnance( notificationUtilisateurRepository.findAllNewByType(commonDto.getUtilisateurToken(), commonDto.getCabinetToken(), NotificationType.NEW_ORDONNANCE));
+		response.setNotificationPatients(notificationUtilisateurRepository.findAllNewByType(commonDto.getUtilisateurToken(), commonDto.getCabinetToken(), NotificationType.NEW_PATIENT));
 		return new ResponseEntity<NotificationResponse>(response, HttpStatus.OK);
 	}
 
