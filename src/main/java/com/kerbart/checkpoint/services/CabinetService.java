@@ -76,13 +76,14 @@ public class CabinetService {
 		return cabinet;
 	}
 
-	public void associateCabinetToUser(String shortCode, Utilisateur user)
+	public Cabinet associateCabinetToUser(String shortCode, Utilisateur user)
 			throws UserAlreadyAssociatedException, CabinetDoesNotExistException {
-		Cabinet app = applicationRepository.findByShortCode(shortCode);
-		if (app == null) {
+		Cabinet cabinet = applicationRepository.findByShortCode(shortCode);
+		if (cabinet == null) {
 			throw new CabinetDoesNotExistException();
 		}
-		this.associateCabinetToUser(app, user);
+		this.associateCabinetToUser(cabinet, user);
+		return cabinet;
 	}
 
 	/**

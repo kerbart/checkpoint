@@ -213,7 +213,8 @@ public class ApiController {
 		CabinetJoinResponse response = new CabinetJoinResponse();
 		if (utilisateur != null) {
 			try {
-				cabinetService.associateCabinetToUser(shortCode, utilisateur);
+				Cabinet cabinet = cabinetService.associateCabinetToUser(shortCode, utilisateur);
+				response.setCabinet(cabinet);
 			} catch (UserAlreadyAssociatedException e) {
 				response.setError(ErrorCode.USER_ALREADY_HAVE_THIS_CABINET);
 			} catch (CabinetDoesNotExistException e) {
