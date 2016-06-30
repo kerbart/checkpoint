@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kerbart.checkpoint.controller.dto.CabinetDTO;
 import com.kerbart.checkpoint.controller.dto.CommentaireDTO;
+import com.kerbart.checkpoint.controller.dto.CommonDTO;
 import com.kerbart.checkpoint.controller.dto.OrdonnanceDTO;
 import com.kerbart.checkpoint.controller.dto.PatientDTO;
 import com.kerbart.checkpoint.controller.dto.PatientSearchDTO;
@@ -35,6 +36,7 @@ import com.kerbart.checkpoint.controller.responses.CommentaireResponse;
 import com.kerbart.checkpoint.controller.responses.CommentairesResponse;
 import com.kerbart.checkpoint.controller.responses.ErrorCode;
 import com.kerbart.checkpoint.controller.responses.FileResponse;
+import com.kerbart.checkpoint.controller.responses.NotificationResponse;
 import com.kerbart.checkpoint.controller.responses.OrdonnanceResponse;
 import com.kerbart.checkpoint.controller.responses.OrdonnancesResponse;
 import com.kerbart.checkpoint.controller.responses.PatientResponse;
@@ -53,6 +55,7 @@ import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.SecuredFile;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.CabinetRepository;
+import com.kerbart.checkpoint.repositories.NotificationUtilisateurRepository;
 import com.kerbart.checkpoint.repositories.PatientRepository;
 import com.kerbart.checkpoint.repositories.UtilisateurRepository;
 import com.kerbart.checkpoint.services.CabinetService;
@@ -67,6 +70,8 @@ import io.swagger.annotations.ApiOperation;
 @Api(value = "Checkpoint API")
 public class ApiController {
 
+//	https://www.ovh.com/cgi-bin/sms/http2sms.cgi?smsAccount=sms-kd273-1&login=checkpoint&password=test1234&from=CHECKPOINT&to=0033787879784&noStop=1&contentType=text/xml&message=Bonjour
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApiController.class);
 
 	@Inject
@@ -87,6 +92,9 @@ public class ApiController {
 	@Inject
 	CabinetRepository cabinetRepository;
 
+	@Inject
+	NotificationUtilisateurRepository notificationUtilisateurRepository;
+	
 	@ApiOperation(value = "Connexion de l'utilisateur")
 	@RequestMapping(value = "/user/login", produces = "application/json", method = RequestMethod.POST)
 	@CrossOrigin(origins = "*")
@@ -135,6 +143,24 @@ public class ApiController {
 			return new ResponseEntity<UtilisateurResponse>(response, HttpStatus.OK);
 		}
 	}
+	
+	@ApiOperation(value = "Liste les notifications pour un utilisateur donné")
+	@RequestMapping(value = "/user/notifications", produces = "application/json", method = RequestMethod.GET)
+	@CrossOrigin(origins = "*")
+	public ResponseEntity<NotificationResponse> listNotifications(@RequestBody CommonDTO commonDto) {
+		NotificationResponse response = new NotificationResponse();
+		try {
+			checkCabinetAndUtilisateur(commonDto.getCabinetToken(), commonDto.getUtilisateurToken());
+		} catch (GlobalCredentialsException e1) {
+			response.setError(e1.getErrorCode());
+			return new ResponseEntity<NotificationResponse>(response, HttpStatus.OK);
+		}
+
+		response.setNotificationCommentaire(notificationUtilisateurRepository.findAllNewComments(commonDto.getUtilisateurToken(), commonDto.getCabinetToken()));
+		response.setNotificationOrdonnance( notificationUtilisateurRepository.findAllNewOrdonnances(commonDto.getUtilisateurToken(), commonDto.getCabinetToken()));
+		response.setNotificationPatients(notificationUtilisateurRepository.findAllNewPatients(commonDto.getUtilisateurToken(), commonDto.getCabinetToken()));
+		return new ResponseEntity<NotificationResponse>(response, HttpStatus.OK);
+	}
 
 	@ApiOperation(value = "Liste des cabinets pour un utilisateur donné")
 	@RequestMapping(value = "/user/{token}/cabinet/list", produces = "application/json", method = RequestMethod.GET)
@@ -151,6 +177,9 @@ public class ApiController {
 			return new ResponseEntity<CabinetsResponse>(response, HttpStatus.OK);
 		}
 	}
+	
+	
+	
 
 	@ApiOperation(value = "Cabient courant pour un utilisateur donné")
 	@RequestMapping(value = "/user/{token}/cabinet/current", produces = "application/json", method = RequestMethod.GET)
@@ -267,7 +296,7 @@ public class ApiController {
 		}
 
 		BeanUtils.copyProperties(patientDto.getPatient(), patient);
-		Patient result = patientService.updatePatient(patient, patientDto.getCabinetToken());
+		Patient result = patientService.updatePatient(patient, patientDto.getCabinetToken(), patientDto.getUtilisateurToken());
 		return new ResponseEntity<PatientResponse>(new PatientResponse(result), HttpStatus.OK);
 
 	}
@@ -397,8 +426,8 @@ public class ApiController {
 	@ApiOperation(value = "Récupère un fichier crypté en fonction de la clé du cabinet")
 	@ResponseBody
 	@RequestMapping(value = "/patient/ordonnance/photo/{cabinetToken}/{utilisateurToken}/{fileToken}", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-	public byte[] ordonnanceFile(@RequestParam("cabinetToken") String cabinetToken,
-			@RequestParam("utilisateurToken") String utilisateurToken, @RequestParam("fileToken") String fileToken) {
+	public byte[] ordonnanceFile(@PathVariable("cabinetToken") String cabinetToken,
+			@PathVariable("utilisateurToken") String utilisateurToken, @PathVariable("fileToken") String fileToken) {
 		try {
 			checkCabinetAndUtilisateur(cabinetToken, utilisateurToken);
 		} catch (GlobalCredentialsException e) {

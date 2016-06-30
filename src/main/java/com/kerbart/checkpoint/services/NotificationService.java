@@ -15,6 +15,7 @@ import com.kerbart.checkpoint.model.Cabinet;
 import com.kerbart.checkpoint.model.Commentaire;
 import com.kerbart.checkpoint.model.NotificationType;
 import com.kerbart.checkpoint.model.Ordonnance;
+import com.kerbart.checkpoint.model.Patient;
 import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.model.UtilisateurNotification;
 import com.kerbart.checkpoint.repositories.CabinetRepository;
@@ -34,32 +35,42 @@ public class NotificationService {
     UtilisateurRepository utilisateurRepository;
 	
     
-    public List<Notification> getAllNotifications(Utilisateur utilisateur) {
-    	 Query query = em.createQuery("select n from UtilisateurNotification n where n.utilisateur.token = :utilisateurToken ")
-                 .setParameter("utilisateurToken", utilisateur.getToken());
-    	 return (List<Notification>) query.getResultList();
-    }
+   
     
-	public void notifyNewOrdonnanceCabinetUsers(Cabinet application, Utilisateur issuer, Ordonnance ordonnance) {
-		for (Utilisateur u : findAllOtherUsers(application, issuer)) {
+	public void notifyNewOrdonnanceCabinetUsers(Cabinet cabinet, Utilisateur issuer, Ordonnance ordonnance) {
+		for (Utilisateur u : findAllOtherUsers(cabinet, issuer)) {
 			UtilisateurNotification notification = new UtilisateurNotification();
 			notification.setUtilisateur(u);
-			notification.setNotification(NotificationType.NEW_ORDO);
+			notification.setCabinet(cabinet);
+			notification.setType(NotificationType.NEW_ORDONNANCE);
 			notification.setOrdonnance(ordonnance);
 			em.persist(notification);
 		}
 	}
 
-	public void notifyNewCommentCabinetUsers(Cabinet application, Utilisateur issuer, Commentaire commentaire) {
-		for (Utilisateur u : findAllOtherUsers(application, issuer)) {
+	public void notifyNewCommentCabinetUsers(Cabinet cabinet, Utilisateur issuer, Commentaire commentaire) {
+		for (Utilisateur u : findAllOtherUsers(cabinet, issuer)) {
 			UtilisateurNotification notification = new UtilisateurNotification();
 			notification.setUtilisateur(u);
-			notification.setNotification(NotificationType.NEW_COMMENT);
+			notification.setCabinet(cabinet);
+			notification.setType(NotificationType.NEW_COMMENT);
 			notification.setCommentaire(commentaire);;
 			em.persist(notification);
 		}
 	}
+	
 
+	public void notifyNewPatientCabinetUsers(Cabinet cabinet, Utilisateur issuer, Patient patient) {
+		for (Utilisateur u : findAllOtherUsers(cabinet, issuer)) {
+			UtilisateurNotification notification = new UtilisateurNotification();
+			notification.setUtilisateur(u);
+			notification.setCabinet(cabinet);
+			notification.setType(NotificationType.NEW_PATIENT);
+			notification.setPatient(patient);;
+			em.persist(notification);
+		}
+	}
+	
 	private List<Utilisateur> findAllOtherUsers(Cabinet application, Utilisateur utilisateur) {
 		List<Utilisateur> utilisateurs = utilisateurRepository.findByAppToken(application.getToken());
 		utilisateurs.remove(utilisateur);

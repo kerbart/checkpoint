@@ -2,5 +2,7 @@ package com.kerbart.checkpoint.model;
 
 public enum NotificationType {
 	NEW_COMMENT,//
-	NEW_ORDO
+	NEW_ORDONNANCE, //
+	NEW_PATIENT,//
+	NEW_TOURNEE
 }

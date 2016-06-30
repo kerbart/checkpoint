@@ -245,7 +245,7 @@ public class EndToEndTests {
 		Patient patient = patientService.createPatient(createRandomPatient(), app.getToken());
 
 		patient.setNom("BIDULE");
-		patientService.updatePatient(patient, app.getToken());
+		patientService.updatePatient(patient, app.getToken(), u.getToken());
 
 		Patient retrievedPatient = patientRepository.findByToken(patient.getToken());
 

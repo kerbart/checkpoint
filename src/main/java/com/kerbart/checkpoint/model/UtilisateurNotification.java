@@ -16,16 +16,22 @@ public class UtilisateurNotification {
 	Long id;
 
 	@ManyToOne
+	Cabinet cabinet;
+	
+	@ManyToOne
 	Utilisateur utilisateur;
-
+	
 	@ManyToOne
 	Ordonnance ordonnance;
 
 	@ManyToOne
 	Commentaire commentaire;
 
+	@ManyToOne
+	Patient patient;
+
 	@Column
-	NotificationType notification;
+	NotificationType type;
 
 	public Long getId() {
 		return id;
@@ -33,6 +39,14 @@ public class UtilisateurNotification {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	public Cabinet getCabinet() {
+		return cabinet;
+	}
+
+	public void setCabinet(Cabinet cabinet) {
+		this.cabinet = cabinet;
 	}
 
 	public Utilisateur getUtilisateur() {
@@ -43,12 +57,12 @@ public class UtilisateurNotification {
 		this.utilisateur = utilisateur;
 	}
 
-	public NotificationType getNotification() {
-		return notification;
+	public NotificationType getType() {
+		return type;
 	}
 
-	public void setNotification(NotificationType notification) {
-		this.notification = notification;
+	public void setType(NotificationType type) {
+		this.type = type;
 	}
 
 	public Ordonnance getOrdonnance() {
@@ -66,4 +80,13 @@ public class UtilisateurNotification {
 	public void setCommentaire(Commentaire commentaire) {
 		this.commentaire = commentaire;
 	}
+
+	public Patient getPatient() {
+		return patient;
+	}
+
+	public void setPatient(Patient patient) {
+		this.patient = patient;
+	}
+
 }

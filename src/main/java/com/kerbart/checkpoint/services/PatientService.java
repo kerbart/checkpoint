@@ -26,6 +26,7 @@ import com.kerbart.checkpoint.model.Utilisateur;
 import com.kerbart.checkpoint.repositories.CabinetRepository;
 import com.kerbart.checkpoint.repositories.CommentaireRepository;
 import com.kerbart.checkpoint.repositories.OrdonnanceRepository;
+import com.kerbart.checkpoint.repositories.UtilisateurRepository;
 
 @Repository("patientService")
 @Transactional
@@ -37,6 +38,9 @@ public class PatientService {
 	@Inject
 	CabinetRepository cabinetRepository;
 
+	@Inject
+	UtilisateurRepository utilisateurRepository;
+	
 	@Inject
 	OrdonnanceRepository ordonnanceRepository;
 
@@ -124,9 +128,11 @@ public class PatientService {
 		return commentaireRepository.findByPatientToken(patientToken);
 	}
 
-	public Patient updatePatient(Patient patient, String applicationToken) {
-		Cabinet app = cabinetRepository.findByToken(applicationToken);
-		patient.setCabinet(app);
+	public Patient updatePatient(Patient patient, String cabinetToken, String utilisateurToken) {
+		Cabinet cabinet = cabinetRepository.findByToken(cabinetToken);
+		Utilisateur utilisateur = utilisateurRepository.findByToken(utilisateurToken);
+		patient.setCabinet(cabinet);
+		notificationService.notifyNewPatientCabinetUsers(cabinet, utilisateur, patient);
 		return em.merge(patient);
 	}
 
