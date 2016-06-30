@@ -273,7 +273,7 @@ public class ApiController {
 
 		Patient patient = new Patient();
 		BeanUtils.copyProperties(patientDto.getPatient(), patient);
-		Patient result = patientService.createPatient(patient, patientDto.getCabinetToken());
+		Patient result = patientService.createPatient(patient, patientDto.getCabinetToken(), patientDto.getUtilisateurToken());
 		return new ResponseEntity<PatientResponse>(new PatientResponse(result), HttpStatus.OK);
 
 	}

@@ -53,10 +53,13 @@ public class PatientService {
 	@Inject
 	FileService fileService;
 
-	public Patient createPatient(Patient patient, String cabinetToken) {
+	public Patient createPatient(Patient patient, String cabinetToken, String utilisateurToken) {
 		Cabinet cabinet = cabinetRepository.findByToken(cabinetToken);
+		Utilisateur utilisateur = utilisateurRepository.findByToken(utilisateurToken);
+		patient.setCreateur(utilisateur);
 		patient.setCabinet(cabinet);
 		em.persist(patient);
+		notificationService.notifyNewPatientCabinetUsers(cabinet, utilisateur, patient);
 		return patient;
 	}
 

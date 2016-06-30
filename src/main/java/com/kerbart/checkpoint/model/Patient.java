@@ -70,6 +70,9 @@ public class Patient {
     @Column
     String token;
 
+    @ManyToOne
+    Utilisateur createur;
+    
     public Patient() {
         super();
         this.token = TokenHelper.generateToken();
@@ -216,4 +219,11 @@ public class Patient {
         this.commentaires = commentaires;
     }
 
+	public Utilisateur getCreateur() {
+		return createur;
+	}
+
+	public void setCreateur(Utilisateur createur) {
+		this.createur = createur;
+	}
 }
