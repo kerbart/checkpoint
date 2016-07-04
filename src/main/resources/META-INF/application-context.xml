@@ -18,7 +18,7 @@
 		<property name="ignoreUnresolvablePlaceholders" value="true"/>
 		<property name="locations">
 			<list>
-				<value>classpath:/application-checkpoint.properties</value>
+				<value>classpath:/application-ilet.properties</value>
 			</list>
 		</property>
 	</bean>
