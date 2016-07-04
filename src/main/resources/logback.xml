@@ -51,11 +51,6 @@
     <logger name="org.eclipse.jetty.server.session" level="INFO"/>
     <logger name="jndi" level="WARN"/>
 
-    <!-- Nusseo Downloader Service Logger -->
-    <logger name="com.nusseo.dld.services.DownloadService" level="ERROR">
-        <appender-ref ref="ERROR_FILE" />
-    </logger>
-
     <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
         <resetJUL>true</resetJUL>
     </contextListener>

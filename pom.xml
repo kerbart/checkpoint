@@ -293,6 +293,7 @@
 			<scope>test</scope>
 		</dependency>
 
+
 	</dependencies>
 
 	<build>
@@ -319,6 +320,17 @@
 					</webResources>
 				</configuration>
 			</plugin>
+			<!-- Jetty -->
+			      <plugin>
+			       <groupId>org.eclipse.jetty</groupId>
+		          <artifactId>jetty-maven-plugin</artifactId>
+		          <version>9.2.6.v20141205</version>
+		          <configuration>
+				    <webApp>
+				        <contextPath>/ilet</contextPath>
+				    </webApp>
+				   </configuration>
+			      </plugin>
 		</plugins>
 	</build>
 
@@ -368,17 +380,4 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-	<distributionManagement>
-		<repository>
-			<id>nusseo-release</id>
-			<name>nusseo-release</name>
-			<url>https://ns391509.ip-176-31-104.eu/artifactory/nusseo-release</url>
-		</repository>
-		<snapshotRepository>
-			<id>nusseo-snapshot</id>
-			<name>nusseo-snapshot</name>
-			<url>https://ns391509.ip-176-31-104.eu/artifactory/nusseo-snapshot</url>
-		</snapshotRepository>
-	</distributionManagement>
-
 </project>

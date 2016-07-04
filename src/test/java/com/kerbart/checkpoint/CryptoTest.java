@@ -31,7 +31,7 @@ public class CryptoTest {
     public void shouldEncryptAndDecryptDocument() {
         String originalContent = "my content is good ok !!!! \n yes !";
         String key = RandomStringUtils.randomAlphanumeric(16);
-        File inputFile = new File("document.txt");
+        File inputFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "document.txt");
         try {
             IOUtils.write(originalContent, new FileOutputStream(inputFile));
         } catch (FileNotFoundException e) {
@@ -42,8 +42,8 @@ public class CryptoTest {
             e.printStackTrace();
         }
 
-        File encryptedFile = new File("document.encrypted");
-        File decryptedFile = new File("document.decrypted");
+        File encryptedFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "document.encrypted");
+        File decryptedFile = new File(System.getProperty("java.io.tmpdir") + File.separator +"document.decrypted");
 
         try {
             CryptoUtils.encrypt(key, inputFile, encryptedFile);

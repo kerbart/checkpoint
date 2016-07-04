@@ -1,3 +1,7 @@
-# Checkpoint
+# Ilet server
 
-Aider les infirmiers liberaux à organiser leurs tournées.
+Partie serveur du projet "Infirmiers Liberaux En Tournée".
+
+Pour installer :
+
+`mvn clean install

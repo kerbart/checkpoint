@@ -37,7 +37,7 @@ window.SwaggerTranslator.learn({
     "Terms of service":"Terms of service",
     "Created by":"Damien Kerbart",
     "See more at":"See more at",
-    "Contact the developer":"damien.kerbart@nusseo.com",
+    "Contact the developer":"damien@kerbart.com",
     "api version":"1.0",
     "Response Content Type":"Response Content Type",
     "Parameter content type:":"Parameter content type:",
